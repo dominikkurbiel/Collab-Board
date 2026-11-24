@@ -1,0 +1,9 @@
+import { healthRouter } from "./routers/health.js";
+import { router } from "./trpc.js";
+
+export const appRouter = router({
+  health: healthRouter,
+});
+
+/** Only the TYPE is shared with the frontend, never the server code itself. */
+export type AppRouter = typeof appRouter;

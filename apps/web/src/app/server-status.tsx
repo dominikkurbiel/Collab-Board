@@ -1,31 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { HealthResponse } from "@collab-board/shared";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
-
-type Status = "checking" | "online" | "offline";
+import { useQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
 
 export function ServerStatus() {
-  const [status, setStatus] = useState<Status>("checking");
+  const trpc = useTRPC();
 
-  useEffect(() => {
-    const controller = new AbortController();
+  const health = useQuery(trpc.health.check.queryOptions(undefined, { refetchInterval: 10_000 }));
+  const hello = useQuery(trpc.health.hello.queryOptions({ name: "visitor" }));
 
-    fetch(`${API_URL}/health`, { signal: controller.signal })
-      .then((res) => (res.ok ? (res.json() as Promise<HealthResponse>) : Promise.reject()))
-      .then((data) => setStatus(data.status === "ok" ? "online" : "offline"))
-      .catch(() => {
-        if (!controller.signal.aborted) setStatus("offline");
-      });
-
-    return () => controller.abort();
-  }, []);
+  const status = health.isPending ? "checking" : health.isError ? "offline" : "online";
 
   return (
-    <p className={`status status--${status}`}>
-      API: <strong>{status}</strong>
-    </p>
+    <>
+      <p className={`status status--${status}`}>
+        API: <strong>{status}</strong>
+      </p>
+      {hello.data && <p>{hello.data.greeting}</p>}
+    </>
   );
 }

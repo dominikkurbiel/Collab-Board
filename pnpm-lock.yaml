@@ -23,9 +23,15 @@ importers:
       '@fastify/cors':
         specifier: ^11.4.3
         version: 11.4.3
+      '@trpc/server':
+        specifier: ^11.31.2
+        version: 11.31.2(fastify@5.12.8)(typescript@7.0.2)
       fastify:
         specifier: ^5.12.8
         version: 5.12.8
+      zod:
+        specifier: ^4.6.7
+        version: 4.6.7
     devDependencies:
       '@types/node':
         specifier: '20'
@@ -42,6 +48,15 @@ importers:
       '@collab-board/shared':
         specifier: workspace:^
         version: link:../../packages/shared
+      '@tanstack/react-query':
+        specifier: ^5.108.4
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@trpc/client':
+        specifier: ^11.31.2
+        version: 11.31.2(@trpc/server@11.31.2)(typescript@7.0.2)
+      '@trpc/tanstack-react-query':
+        specifier: ^11.31.2
+        version: 11.31.2(@tanstack/react-query@5.108.4)(@trpc/client@11.31.2)(@trpc/server@11.31.2)(react@19.3.1)(typescript@7.0.2)
       next:
         specifier: ^16.4.6
         version: 16.4.6(@types/node@20.19.43)(react-dom@19.3.1)(react@19.3.1)
@@ -52,6 +67,9 @@ importers:
         specifier: ^19.3.1
         version: 19.3.1(react@19.3.1)
     devDependencies:
+      '@collab-board/server':
+        specifier: workspace:^
+        version: link:../server
       '@types/node':
         specifier: '20'
         version: 20.19.43
@@ -693,6 +711,100 @@ packages:
       tslib: 2.9.1
     dev: false
 
+  /@tanstack/query-core@5.108.4:
+    resolution: {integrity: sha512-2Ks5dlLWz4eXJrthOyG0qW3SLt3xx0RrQmAmN0rnmogiaaOYuWiAe6HAm9KE2b2v8nig+vraNz8fsfZ6fF6zFg==}
+    dev: false
+
+  /@tanstack/react-query@5.108.4(@types/react@19.3.0)(react@19.3.1):
+    resolution: {integrity: sha512-GlTa94kfEKTVsbzXe58rFA3GZ0ZE7N1aFtbZAfOS3XxMv8YNn4C+8rsz40LorHLazdm5PsqCroWaYAR+ZkMXMQ==}
+    peerDependencies:
+      '@types/react': ^18 || ^19
+      react: ^18 || ^19
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+    dependencies:
+      '@tanstack/query-core': 5.108.4
+      '@types/react': 19.3.0
+      react: 19.3.1
+    dev: false
+
+  /@trpc/client@11.31.2(@trpc/server@11.31.2)(typescript@7.0.2):
+    resolution: {integrity: sha512-rwW0mXFLnNER+yM2+U6hz/RHtbrzA7CtLqpcWcGMobLbmXncz5aSed3cuzHPcadEnGFhRcXbmvIl9P8UdDFkkQ==}
+    peerDependencies:
+      '@trpc/server': 11.31.2
+      typescript: '>=5.7.2'
+    dependencies:
+      '@trpc/server': 11.31.2(next@16.4.6)(typescript@7.0.2)
+      typescript: 7.0.2
+    dev: false
+
+  /@trpc/server@11.31.2(fastify@5.12.8)(typescript@7.0.2):
+    resolution: {integrity: sha512-gKekuwJEEMGeF61zCjGR3aYhqg/Jo09sISwvTLgaUkNQECbVrAHP1Y9D+UNqtOD6sKAzvYX2dGoxst6qGU9fOg==}
+    peerDependencies:
+      '@types/aws-lambda': '*'
+      '@types/express': '*'
+      '@types/ws': '*'
+      fastify: '*'
+      next: '*'
+      typescript: '>=5.7.2'
+    peerDependenciesMeta:
+      '@types/aws-lambda':
+        optional: true
+      '@types/express':
+        optional: true
+      '@types/ws':
+        optional: true
+      fastify:
+        optional: true
+      next:
+        optional: true
+    dependencies:
+      fastify: 5.12.8
+      typescript: 7.0.2
+    dev: false
+
+  /@trpc/server@11.31.2(next@16.4.6)(typescript@7.0.2):
+    resolution: {integrity: sha512-gKekuwJEEMGeF61zCjGR3aYhqg/Jo09sISwvTLgaUkNQECbVrAHP1Y9D+UNqtOD6sKAzvYX2dGoxst6qGU9fOg==}
+    peerDependencies:
+      '@types/aws-lambda': '*'
+      '@types/express': '*'
+      '@types/ws': '*'
+      fastify: '*'
+      next: '*'
+      typescript: '>=5.7.2'
+    peerDependenciesMeta:
+      '@types/aws-lambda':
+        optional: true
+      '@types/express':
+        optional: true
+      '@types/ws':
+        optional: true
+      fastify:
+        optional: true
+      next:
+        optional: true
+    dependencies:
+      next: 16.4.6(@types/node@20.19.43)(react-dom@19.3.1)(react@19.3.1)
+      typescript: 7.0.2
+    dev: false
+
+  /@trpc/tanstack-react-query@11.31.2(@tanstack/react-query@5.108.4)(@trpc/client@11.31.2)(@trpc/server@11.31.2)(react@19.3.1)(typescript@7.0.2):
+    resolution: {integrity: sha512-/a3j7ej/p4GpSW3osPaUJa0mzkfYi9TkAuqf7kpmSbFOHGpOl4IktWXSUjAivk/fyFi4UMRE6NzXiYG5le56xQ==}
+    peerDependencies:
+      '@tanstack/react-query': ^5.106.0
+      '@trpc/client': 11.31.2
+      '@trpc/server': 11.31.2
+      react: '>=18.2.0'
+      typescript: '>=5.7.2'
+    dependencies:
+      '@tanstack/react-query': 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@trpc/client': 11.31.2(@trpc/server@11.31.2)(typescript@7.0.2)
+      '@trpc/server': 11.31.2(next@16.4.6)(typescript@7.0.2)
+      react: 19.3.1
+      typescript: 7.0.2
+    dev: false
+
   /@types/node@20.19.43:
     resolution: {integrity: sha512-6oYBAi5ikg4Pl+kGsoYtawUMBT2zZMCvPNF7pVLnHZfd1zf38DRiWn/gT01RYCdUqkv7Fhr+C9ot4/tb+2sVvA==}
     dependencies:
@@ -710,7 +822,6 @@ packages:
     resolution: {integrity: sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg==}
     dependencies:
       csstype: 3.2.4
-    dev: true
 
   /@typescript/typescript-aix-ppc64@7.0.2:
     resolution: {integrity: sha512-MTKKkWB7p/0E9xi1d1tHtZ5PiLkGEMIq88pK2CubZjOsLtYTLqhgIgi6zepFa+9GHZ6h05NMCkQxGKiPXMxXtQ==}
@@ -718,7 +829,6 @@ packages:
     cpu: [ppc64]
     os: [aix]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-darwin-arm64@7.0.2:
@@ -727,7 +837,6 @@ packages:
     cpu: [arm64]
     os: [darwin]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-darwin-x64@7.0.2:
@@ -736,7 +845,6 @@ packages:
     cpu: [x64]
     os: [darwin]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-freebsd-arm64@7.0.2:
@@ -745,7 +853,6 @@ packages:
     cpu: [arm64]
     os: [freebsd]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-freebsd-x64@7.0.2:
@@ -754,7 +861,6 @@ packages:
     cpu: [x64]
     os: [freebsd]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-linux-arm64@7.0.2:
@@ -763,7 +869,6 @@ packages:
     cpu: [arm64]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-linux-arm@7.0.2:
@@ -772,7 +877,6 @@ packages:
     cpu: [arm]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-linux-loong64@7.0.2:
@@ -781,7 +885,6 @@ packages:
     cpu: [loong64]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-linux-mips64el@7.0.2:
@@ -790,7 +893,6 @@ packages:
     cpu: [mips64el]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-linux-ppc64@7.0.2:
@@ -799,7 +901,6 @@ packages:
     cpu: [ppc64]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-linux-riscv64@7.0.2:
@@ -808,7 +909,6 @@ packages:
     cpu: [riscv64]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-linux-s390x@7.0.2:
@@ -817,7 +917,6 @@ packages:
     cpu: [s390x]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-linux-x64@7.0.2:
@@ -826,7 +925,6 @@ packages:
     cpu: [x64]
     os: [linux]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-netbsd-arm64@7.0.2:
@@ -835,7 +933,6 @@ packages:
     cpu: [arm64]
     os: [netbsd]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-netbsd-x64@7.0.2:
@@ -844,7 +941,6 @@ packages:
     cpu: [x64]
     os: [netbsd]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-openbsd-arm64@7.0.2:
@@ -853,7 +949,6 @@ packages:
     cpu: [arm64]
     os: [openbsd]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-openbsd-x64@7.0.2:
@@ -862,7 +957,6 @@ packages:
     cpu: [x64]
     os: [openbsd]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-sunos-x64@7.0.2:
@@ -871,7 +965,6 @@ packages:
     cpu: [x64]
     os: [sunos]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-win32-arm64@7.0.2:
@@ -880,7 +973,6 @@ packages:
     cpu: [arm64]
     os: [win32]
     requiresBuild: true
-    dev: true
     optional: true
 
   /@typescript/typescript-win32-x64@7.0.2:
@@ -889,7 +981,6 @@ packages:
     cpu: [x64]
     os: [win32]
     requiresBuild: true
-    dev: true
     optional: true
 
   /abstract-logging@2.0.1:
@@ -949,7 +1040,6 @@ packages:
 
   /csstype@3.2.4:
     resolution: {integrity: sha512-PoKaoPzQapnEoqUSnHx1u6W6ku8CVEgKsnpmmzU3m1nwkidpPBQ8V/Zq2+bWNrsOKoKLwTGdbx6xF7BXP1zLVQ==}
-    dev: true
 
   /dequal@2.0.3:
     resolution: {integrity: sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==}
@@ -1405,7 +1495,10 @@ packages:
       '@typescript/typescript-sunos-x64': 7.0.2
       '@typescript/typescript-win32-arm64': 7.0.2
       '@typescript/typescript-win32-x64': 7.0.2
-    dev: true
 
   /undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
+
+  /zod@4.6.7:
+    resolution: {integrity: sha512-g8W2D2kU6a8untc053fX1uVBKzM7yqAxW/3zwk83+6RyF2+SKOuV+c0wBDhUwzV1PaGapmZH+rmcUzPf+3CGwg==}
+    dev: false

@@ -11,11 +11,15 @@
   },
   "dependencies": {
     "@collab-board/shared": "workspace:^",
+    "@tanstack/react-query": "^5.108.4",
+    "@trpc/client": "^11.31.2",
+    "@trpc/tanstack-react-query": "^11.31.2",
     "next": "^16.4.6",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@collab-board/server": "workspace:^",
     "@types/node": "20",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0"
