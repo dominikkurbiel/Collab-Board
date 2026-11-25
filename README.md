@@ -6,13 +6,13 @@ Real-time collaborative whiteboard: share a link, see each other's cursors and e
 
 ## Tech stack
 
-| Layer    | Technology                                        |
-| -------- | ------------------------------------------------- |
-| Frontend | Next.js (App Router), React, TypeScript           |
-| Backend  | Node.js, Fastify, WebSockets                      |
-| Sync     | Yjs (CRDT) _(planned)_                            |
-| Data     | PostgreSQL, Redis _(planned)_                     |
-| Tooling  | pnpm workspaces, Docker Compose, Prettier, Vitest |
+| Layer    | Technology                                                       |
+| -------- | ---------------------------------------------------------------- |
+| Frontend | Next.js (App Router), React, TypeScript, TanStack Query, Zustand |
+| Backend  | Node.js, Fastify, tRPC, Zod, WebSockets _(planned)_              |
+| Sync     | Yjs (CRDT) _(planned)_                                           |
+| Data     | PostgreSQL, Redis _(planned)_                                    |
+| Tooling  | pnpm workspaces, Docker Compose, Prettier, Vitest                |
 
 ## Project structure
 
