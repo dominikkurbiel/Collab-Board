@@ -1,0 +1,204 @@
+.container {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.board {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none; /* let pointer events handle touch, no native scrolling */
+  user-select: none;
+  background-image: radial-gradient(circle, #d6d3d1 1px, transparent 1px);
+}
+
+.panning {
+  cursor: grabbing;
+}
+
+/* Zero-size layer at the world origin; notes are positioned inside it */
+.world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 0 0;
+}
+
+/* --- Notes --- */
+
+.note {
+  position: absolute;
+  background: var(--note-color);
+  padding: 16px;
+  border-radius: 4px;
+  box-shadow:
+    0 1px 2px rgb(0 0 0 / 0.08),
+    0 4px 12px rgb(0 0 0 / 0.08);
+  cursor: move;
+}
+
+.selected {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.noteText {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  font-size: 18px;
+  line-height: 1.35;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.placeholder {
+  color: rgb(0 0 0 / 0.35);
+}
+
+.noteInput {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: none;
+  outline: none;
+  resize: none;
+  background: transparent;
+  font: inherit;
+  font-size: 18px;
+  line-height: 1.35;
+  color: inherit;
+  user-select: text;
+}
+
+/*
+ * Color classes only set a variable. Notes and toolbar swatches both read it,
+ * so a swatch's background isn't overridden by the generic `.toolbar button` rule.
+ */
+.yellow {
+  --note-color: #fef08a;
+}
+.pink {
+  --note-color: #fbcfe8;
+}
+.blue {
+  --note-color: #bfdbfe;
+}
+.green {
+  --note-color: #bbf7d0;
+}
+.purple {
+  --note-color: #ddd6fe;
+}
+
+/* --- UI overlay --- */
+
+.toolbar {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
+  font-size: 14px;
+}
+
+.toolbar button {
+  padding: 6px 10px;
+  border: 1px solid #e7e5e4;
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.toolbar button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toolbar button:hover:not(:disabled) {
+  background: #f5f5f4;
+}
+
+.colors,
+.zoom {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.toolbar .swatch {
+  background: var(--note-color);
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+.toolbar .swatch:hover:not(:disabled) {
+  background: var(--note-color); /* keep the color on hover */
+  filter: brightness(0.95);
+}
+
+.toolbar .swatch:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.toolbar .swatchActive {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+.zoomValue {
+  min-width: 3.5em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.position,
+.hint {
+  position: absolute;
+  bottom: 16px;
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: rgb(255 255 255 / 0.85);
+  color: var(--muted);
+  font-size: 12px;
+  pointer-events: none;
+}
+
+.position {
+  right: 16px;
+  font-variant-numeric: tabular-nums;
+}
+
+.hint {
+  left: 16px;
+}
+
+.toolbar .dangerButton {
+  border-color: #dc2626;
+  background: #dc2626;
+  color: #fff;
+}
+
+.toolbar .dangerButton:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.confirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}

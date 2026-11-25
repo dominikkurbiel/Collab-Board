@@ -39,7 +39,8 @@ pnpm dev           # web on :3000, server on :4000
 
 - [x] Monorepo setup (web, server, shared)
 - [x] Type-safe API with tRPC + TanStack Query
-- [ ] Board canvas: sticky notes, shapes, pan & zoom
+- [x] Board canvas: sticky notes, pan & zoom (infinite canvas)
+- [ ] Shapes and connectors
 - [ ] Real-time sync with Yjs over WebSockets
 - [ ] Live cursors and presence
 - [ ] Persistence in PostgreSQL
