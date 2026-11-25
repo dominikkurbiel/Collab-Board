@@ -66,6 +66,25 @@ export function zoomAt(viewport: Viewport, screenPoint: Point, factor: number): 
   };
 }
 
+/** Rectangle spanned by two corner points, in any order (e.g. dragging up-left). */
+export function rectFromPoints(a: Point, b: Point): Rect {
+  return {
+    x: Math.min(a.x, b.x),
+    y: Math.min(a.y, b.y),
+    width: Math.abs(a.x - b.x),
+    height: Math.abs(a.y - b.y),
+  };
+}
+
+export function centeredRect(center: Point, size: Size): Rect {
+  return {
+    x: center.x - size.width / 2,
+    y: center.y - size.height / 2,
+    width: size.width,
+    height: size.height,
+  };
+}
+
 /** Smallest rectangle containing all given rectangles, or null when there are none. */
 export function getBounds(rects: readonly Rect[]): Rect | null {
   if (rects.length === 0) return null;

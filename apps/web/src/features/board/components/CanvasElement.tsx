@@ -1,14 +1,13 @@
 "use client";
 
-import type { BoardNote } from "@collab-board/shared";
+import type { BoardElement } from "@collab-board/shared";
 import { memo, useEffect, useRef, useState } from "react";
 import styles from "../board.module.css";
 import type { Point, Viewport } from "../viewport";
 
-interface StickyNoteProps {
-  note: BoardNote;
+interface CanvasElementProps {
+  element: BoardElement;
   viewport: Viewport;
-  selected: boolean;
   clientToWorld: (clientX: number, clientY: number) => Point;
   onSelect: (id: string) => void;
   onMove: (id: string, x: number, y: number) => void;
@@ -16,49 +15,49 @@ interface StickyNoteProps {
 }
 
 interface DragState {
-  /** Where inside the note it was grabbed, in WORLD units (keeps the grab point under the cursor). */
+  /** Where inside the element it was grabbed, in WORLD units (keeps that point under the cursor). */
   grabOffset: Point;
   /** Last known mouse position, so we can re-position when the view changes mid-drag. */
   clientX: number;
   clientY: number;
 }
 
-export const StickyNote = memo(function StickyNote({
-  note,
+/** A sticky note or a shape. Handles dragging and text editing; selection UI is drawn elsewhere. */
+export const CanvasElement = memo(function CanvasElement({
+  element,
   viewport,
-  selected,
   clientToWorld,
   onSelect,
   onMove,
   onChangeText,
-}: StickyNoteProps) {
+}: CanvasElementProps) {
   const [editing, setEditing] = useState(false);
   const drag = useRef<DragState | null>(null);
 
-  /** Puts the note under the cursor: cursor in world coords minus where we grabbed it. */
+  /** Puts the element under the cursor: cursor in world coords minus where we grabbed it. */
   const followCursor = (clientX: number, clientY: number) => {
     const state = drag.current;
     if (!state) return;
     const pointer = clientToWorld(clientX, clientY);
-    onMove(note.id, pointer.x - state.grabOffset.x, pointer.y - state.grabOffset.y);
+    onMove(element.id, pointer.x - state.grabOffset.x, pointer.y - state.grabOffset.y);
   };
 
-  // Zooming or scrolling while holding a note changes the view but not the mouse
-  // position, so recompute where the note should be.
+  // Zooming or scrolling while holding an element changes the view but not the mouse
+  // position, so recompute where the element should be.
   useEffect(() => {
     if (drag.current) followCursor(drag.current.clientX, drag.current.clientY);
-    // Intentionally only re-run on view changes, not on every note change
+    // Intentionally only re-run on view changes, not on every element change
   }, [viewport]);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (editing || event.button !== 0) return;
     event.stopPropagation();
-    onSelect(note.id);
+    onSelect(element.id);
     event.currentTarget.setPointerCapture(event.pointerId);
 
     const pointer = clientToWorld(event.clientX, event.clientY);
     drag.current = {
-      grabOffset: { x: pointer.x - note.x, y: pointer.y - note.y },
+      grabOffset: { x: pointer.x - element.x, y: pointer.y - element.y },
       clientX: event.clientX,
       clientY: event.clientY,
     };
@@ -75,10 +74,12 @@ export const StickyNote = memo(function StickyNote({
     drag.current = null;
   };
 
+  const isNote = element.type === "note";
+
   return (
     <div
-      className={`${styles.note} ${styles[note.color]} ${selected ? styles.selected : ""}`}
-      style={{ left: note.x, top: note.y, width: note.width, height: note.height }}
+      className={`${styles.element} ${styles[element.type]} ${styles[element.color]}`}
+      style={{ left: element.x, top: element.y, width: element.width, height: element.height }}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={stopDragging}
@@ -90,19 +91,19 @@ export const StickyNote = memo(function StickyNote({
     >
       {editing ? (
         <textarea
-          className={styles.noteInput}
-          value={note.text}
+          className={styles.elementInput}
+          value={element.text}
           autoFocus
           onFocus={(event) => event.currentTarget.select()}
-          onChange={(event) => onChangeText(note.id, event.target.value)}
+          onChange={(event) => onChangeText(element.id, event.target.value)}
           onBlur={() => setEditing(false)}
           onKeyDown={(event) => {
             if (event.key === "Escape") event.currentTarget.blur();
           }}
         />
       ) : (
-        <p className={note.text ? styles.noteText : `${styles.noteText} ${styles.placeholder}`}>
-          {note.text || "Double-click to edit"}
+        <p className={`${styles.elementText} ${element.text ? "" : styles.placeholder}`}>
+          {element.text || (isNote ? "Double-click to edit" : "")}
         </p>
       )}
     </div>

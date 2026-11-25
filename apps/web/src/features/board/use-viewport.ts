@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
-import { INITIAL_VIEWPORT, panBy, zoomAt, type Point, type Viewport } from "./viewport";
+import { useBoardUi } from "./ui-store";
+import { panBy, zoomAt, type Point } from "./viewport";
 
 const LINE_HEIGHT_PX = 16;
 const ZOOM_SPEED = 0.01;
@@ -19,7 +20,9 @@ export function getLocalPoint(element: HTMLElement, clientX: number, clientY: nu
  * - dragging the empty background → pan
  */
 export function useViewport(boardRef: RefObject<HTMLElement | null>) {
-  const [viewport, setViewport] = useState<Viewport>(INITIAL_VIEWPORT);
+  // The view lives in the Zustand UI store, so any component can read it without props
+  const viewport = useBoardUi((state) => state.viewport);
+  const setViewport = useBoardUi((state) => state.setViewport);
   const [isPanning, setIsPanning] = useState(false);
   const lastPointer = useRef<Point | null>(null);
 
@@ -46,7 +49,7 @@ export function useViewport(boardRef: RefObject<HTMLElement | null>) {
 
     board.addEventListener("wheel", onWheel, { passive: false });
     return () => board.removeEventListener("wheel", onWheel);
-  }, [boardRef]);
+  }, [boardRef, setViewport]);
 
   const onPointerDown = useCallback((event: React.PointerEvent<HTMLElement>) => {
     // Only the empty background starts panning (notes handle their own dragging)
@@ -60,14 +63,17 @@ export function useViewport(boardRef: RefObject<HTMLElement | null>) {
     setIsPanning(true);
   }, []);
 
-  const onPointerMove = useCallback((event: React.PointerEvent<HTMLElement>) => {
-    const last = lastPointer.current;
-    if (!last) return;
-    const dx = event.clientX - last.x;
-    const dy = event.clientY - last.y;
-    lastPointer.current = { x: event.clientX, y: event.clientY };
-    setViewport((v) => panBy(v, dx, dy));
-  }, []);
+  const onPointerMove = useCallback(
+    (event: React.PointerEvent<HTMLElement>) => {
+      const last = lastPointer.current;
+      if (!last) return;
+      const dx = event.clientX - last.x;
+      const dy = event.clientY - last.y;
+      lastPointer.current = { x: event.clientX, y: event.clientY };
+      setViewport((v) => panBy(v, dx, dy));
+    },
+    [setViewport],
+  );
 
   const stopPanning = useCallback(() => {
     lastPointer.current = null;

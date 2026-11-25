@@ -19,7 +19,16 @@
   cursor: grabbing;
 }
 
-/* Zero-size layer at the world origin; notes are positioned inside it */
+/* With a drawing tool, clicks go "through" elements, so you can draw on top of them */
+.drawing {
+  cursor: crosshair;
+}
+
+.drawing .element {
+  pointer-events: none;
+}
+
+/* Zero-size layer at the world origin; elements are positioned inside it */
 .world {
   position: absolute;
   top: 0;
@@ -27,27 +36,44 @@
   transform-origin: 0 0;
 }
 
-/* --- Notes --- */
+/* --- Elements --- */
+
+.element {
+  position: absolute;
+  display: flex;
+  padding: 16px;
+  background: var(--element-color);
+  cursor: move;
+}
 
 .note {
-  position: absolute;
-  background: var(--note-color);
-  padding: 16px;
   border-radius: 4px;
   box-shadow:
     0 1px 2px rgb(0 0 0 / 0.08),
     0 4px 12px rgb(0 0 0 / 0.08);
-  cursor: move;
 }
 
-.selected {
-  outline: 2px solid #2563eb;
-  outline-offset: 2px;
+.rectangle,
+.ellipse {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  border: 2px solid rgb(0 0 0 / 0.55);
 }
 
-.noteText {
+.rectangle {
+  border-radius: 6px;
+}
+
+.ellipse {
+  border-radius: 50%;
+  padding: 18%; /* keep text inside the curve */
+}
+
+.elementText {
   margin: 0;
-  height: 100%;
+  width: 100%;
+  max-height: 100%;
   overflow: hidden;
   font-size: 18px;
   line-height: 1.35;
@@ -55,11 +81,15 @@
   overflow-wrap: anywhere;
 }
 
+.note .elementText {
+  height: 100%;
+}
+
 .placeholder {
   color: rgb(0 0 0 / 0.35);
 }
 
-.noteInput {
+.elementInput {
   width: 100%;
   height: 100%;
   padding: 0;
@@ -70,28 +100,81 @@
   font: inherit;
   font-size: 18px;
   line-height: 1.35;
+  text-align: inherit;
   color: inherit;
   user-select: text;
 }
 
 /*
- * Color classes only set a variable. Notes and toolbar swatches both read it,
+ * Color classes only set a variable. Elements and toolbar swatches both read it,
  * so a swatch's background isn't overridden by the generic `.toolbar button` rule.
  */
 .yellow {
-  --note-color: #fef08a;
+  --element-color: #fef08a;
 }
 .pink {
-  --note-color: #fbcfe8;
+  --element-color: #fbcfe8;
 }
 .blue {
-  --note-color: #bfdbfe;
+  --element-color: #bfdbfe;
 }
 .green {
-  --note-color: #bbf7d0;
+  --element-color: #bbf7d0;
 }
 .purple {
-  --note-color: #ddd6fe;
+  --element-color: #ddd6fe;
+}
+
+/* Preview while dragging out a new element */
+.draft {
+  position: absolute;
+  border: 2px dashed #2563eb;
+  background: rgb(37 99 235 / 0.08);
+  pointer-events: none;
+}
+
+.draft.ellipse {
+  border-radius: 50%;
+}
+
+/* --- Selection (screen space, constant size at any zoom) --- */
+
+.selection {
+  position: absolute;
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  pointer-events: none; /* only the handles are interactive */
+}
+
+.handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #2563eb;
+  border-radius: 3px;
+  background: #fff;
+  pointer-events: auto;
+}
+
+.nw {
+  top: -8px;
+  left: -8px;
+  cursor: nwse-resize;
+}
+.ne {
+  top: -8px;
+  right: -8px;
+  cursor: nesw-resize;
+}
+.sw {
+  bottom: -8px;
+  left: -8px;
+  cursor: nesw-resize;
+}
+.se {
+  bottom: -8px;
+  right: -8px;
+  cursor: nwse-resize;
 }
 
 /* --- UI overlay --- */
@@ -109,6 +192,13 @@
   background: #fff;
   box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
   font-size: 14px;
+  white-space: nowrap;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .toolbar button {
@@ -129,34 +219,39 @@
   background: #f5f5f4;
 }
 
-.colors,
-.zoom {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.toolbar .active,
+.toolbar .active:hover:not(:disabled) {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
 }
 
 .toolbar .swatch {
-  background: var(--note-color);
   width: 22px;
   height: 22px;
   padding: 0;
   border-radius: 50%;
+  background: var(--element-color);
 }
 
 .toolbar .swatch:hover:not(:disabled) {
-  background: var(--note-color); /* keep the color on hover */
+  background: var(--element-color); /* keep the color on hover */
   filter: brightness(0.95);
-}
-
-.toolbar .swatch:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
 }
 
 .toolbar .swatchActive {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
+}
+
+.toolbar .dangerButton {
+  border-color: #dc2626;
+  background: #dc2626;
+  color: #fff;
+}
+
+.toolbar .dangerButton:hover:not(:disabled) {
+  background: #b91c1c;
 }
 
 .zoomValue {
@@ -185,20 +280,4 @@
 
 .hint {
   left: 16px;
-}
-
-.toolbar .dangerButton {
-  border-color: #dc2626;
-  background: #dc2626;
-  color: #fff;
-}
-
-.toolbar .dangerButton:hover:not(:disabled) {
-  background: #b91c1c;
-}
-
-.confirm {
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }

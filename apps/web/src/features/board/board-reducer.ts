@@ -1,74 +1,69 @@
-import { DEFAULT_NOTE_SIZE, type BoardNote, type NoteColor } from "@collab-board/shared";
-import type { Point } from "./viewport";
+import {
+  DEFAULT_ELEMENT_COLOR,
+  type BoardElement,
+  type ElementColor,
+  type ElementType,
+} from "@collab-board/shared";
+import type { Rect } from "./viewport";
 
 /**
- * Board state and all the ways it can change. Pure functions, no React:
- * when real-time sync (Yjs) arrives, only the source of this state changes.
+ * The board DOCUMENT (what everyone sees) and all the ways it can change.
+ * Pure functions, no React: when real-time sync (Yjs) arrives, only the source of
+ * this state changes. Per-user UI state (tool, view, selection) lives in ui-store.ts.
  */
 
 export interface BoardState {
-  /** Render order: the last note is drawn on top. */
-  notes: BoardNote[];
-  selectedId: string | null;
+  /** Render order: the last element is drawn on top. */
+  elements: BoardElement[];
 }
 
 export type BoardAction =
-  | { type: "addNote"; note: BoardNote }
-  | { type: "moveNote"; id: string; x: number; y: number }
-  | { type: "updateNoteText"; id: string; text: string }
-  | { type: "setNoteColor"; id: string; color: NoteColor }
-  | { type: "deleteNote"; id: string }
-  | { type: "selectNote"; id: string | null };
+  | { type: "addElement"; element: BoardElement }
+  | { type: "moveElement"; id: string; x: number; y: number }
+  | { type: "resizeElement"; id: string; rect: Rect }
+  | { type: "updateElementText"; id: string; text: string }
+  | { type: "setElementColor"; id: string; color: ElementColor }
+  | { type: "deleteElement"; id: string }
+  | { type: "bringToFront"; id: string };
 
 export function boardReducer(state: BoardState, action: BoardAction): BoardState {
   switch (action.type) {
-    case "addNote":
-      return { notes: [...state.notes, action.note], selectedId: action.note.id };
+    case "addElement":
+      return { elements: [...state.elements, action.element] };
 
-    case "moveNote":
-      return updateNote(state, action.id, { x: action.x, y: action.y });
+    case "moveElement":
+      return updateElement(state, action.id, { x: action.x, y: action.y });
 
-    case "updateNoteText":
-      return updateNote(state, action.id, { text: action.text });
+    case "resizeElement":
+      return updateElement(state, action.id, action.rect);
 
-    case "setNoteColor":
-      return updateNote(state, action.id, { color: action.color });
+    case "updateElementText":
+      return updateElement(state, action.id, { text: action.text });
 
-    case "deleteNote":
-      return {
-        notes: state.notes.filter((note) => note.id !== action.id),
-        selectedId: state.selectedId === action.id ? null : state.selectedId,
-      };
+    case "setElementColor":
+      return updateElement(state, action.id, { color: action.color });
 
-    case "selectNote": {
-      if (action.id === null) return { ...state, selectedId: null };
-      // Bring the selected note to the front
-      const note = state.notes.find((n) => n.id === action.id);
-      if (!note) return state;
-      return {
-        notes: [...state.notes.filter((n) => n.id !== action.id), note],
-        selectedId: action.id,
-      };
+    case "deleteElement":
+      return { elements: state.elements.filter((el) => el.id !== action.id) };
+
+    case "bringToFront": {
+      const element = state.elements.find((el) => el.id === action.id);
+      if (!element || state.elements.at(-1) === element) return state;
+      return { elements: [...state.elements.filter((el) => el.id !== action.id), element] };
     }
   }
 }
 
-function updateNote(state: BoardState, id: string, changes: Partial<BoardNote>): BoardState {
+function updateElement(state: BoardState, id: string, changes: Partial<BoardElement>): BoardState {
   return {
-    ...state,
-    notes: state.notes.map((note) => (note.id === id ? { ...note, ...changes } : note)),
+    elements: state.elements.map((el) => (el.id === id ? { ...el, ...changes } : el)),
   };
 }
 
-/** New note centered on a world position. */
-export function createNote(center: Point, color: NoteColor = "yellow"): BoardNote {
-  return {
-    id: crypto.randomUUID(),
-    x: center.x - DEFAULT_NOTE_SIZE / 2,
-    y: center.y - DEFAULT_NOTE_SIZE / 2,
-    width: DEFAULT_NOTE_SIZE,
-    height: DEFAULT_NOTE_SIZE,
-    text: "",
-    color,
-  };
+export function createElement(
+  type: ElementType,
+  rect: Rect,
+  color: ElementColor = DEFAULT_ELEMENT_COLOR[type],
+): BoardElement {
+  return { id: crypto.randomUUID(), type, ...rect, text: "", color };
 }

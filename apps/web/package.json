@@ -16,7 +16,8 @@
     "@trpc/tanstack-react-query": "^11.31.2",
     "next": "^16.4.6",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "zustand": "^5.1.0"
   },
   "devDependencies": {
     "@collab-board/server": "workspace:^",
