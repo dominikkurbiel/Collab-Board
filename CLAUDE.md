@@ -20,6 +20,7 @@ Run from the repo root:
 pnpm dev            # builds shared, then runs web (:3000) and server (:4000)
 pnpm build          # production build of everything
 pnpm typecheck      # TypeScript check in all packages
+pnpm test           # unit tests (Vitest)
 pnpm format         # Prettier
 pnpm services:up    # start PostgreSQL + Redis
 ```
@@ -56,6 +57,6 @@ pnpm services:up    # start PostgreSQL + Redis
 
 ## Before finishing a task
 
-1. `pnpm typecheck` and `pnpm build` pass.
+1. `pnpm typecheck`, `pnpm test` and `pnpm build` pass.
 2. `pnpm format` has been run.
 3. Don't commit or push unless asked.

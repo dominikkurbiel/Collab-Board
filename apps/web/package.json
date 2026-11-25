@@ -7,7 +7,9 @@
     "dev": "next dev --port 3000",
     "build": "next build",
     "start": "next start --port 3000",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@collab-board/shared": "workspace:^",
@@ -23,6 +25,7 @@
     "@collab-board/server": "workspace:^",
     "@types/node": "20",
     "@types/react": "^19.3.0",
-    "@types/react-dom": "^19.3.0"
+    "@types/react-dom": "^19.3.0",
+    "vitest": "^4.1.12"
   }
 }
