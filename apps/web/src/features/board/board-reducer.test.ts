@@ -1,6 +1,12 @@
 import type { BoardElement } from "@collab-board/shared";
 import { describe, expect, it } from "vitest";
-import { boardReducer, createElement, type BoardState } from "./board-reducer";
+import {
+  boardReducer,
+  canConnect,
+  createConnector,
+  createElement,
+  type BoardState,
+} from "./board-reducer";
 
 function element(id: string, overrides: Partial<BoardElement> = {}): BoardElement {
   return {
@@ -16,7 +22,13 @@ function element(id: string, overrides: Partial<BoardElement> = {}): BoardElemen
   };
 }
 
-const state: BoardState = { elements: [element("a"), element("b"), element("c")] };
+const state: BoardState = {
+  elements: [element("a"), element("b"), element("c")],
+  connectors: [
+    { id: "a->b", from: "a", to: "b" },
+    { id: "b->c", from: "b", to: "c" },
+  ],
+};
 
 const ids = (s: BoardState) => s.elements.map((el) => el.id);
 
@@ -44,9 +56,10 @@ describe("boardReducer", () => {
     expect(next.elements[2]).toMatchObject({ text: "Hello", color: "pink" });
   });
 
-  it("deletes an element", () => {
+  it("deletes an element together with its arrows", () => {
     const next = boardReducer(state, { type: "deleteElement", id: "b" });
     expect(ids(next)).toEqual(["a", "c"]);
+    expect(next.connectors).toEqual([]);
   });
 
   it("brings an element to the front", () => {
@@ -68,6 +81,35 @@ describe("boardReducer", () => {
     boardReducer(state, { type: "moveElement", id: "a", x: 1, y: 1 });
     boardReducer(state, { type: "deleteElement", id: "a" });
     expect(state).toEqual(snapshot);
+  });
+});
+
+describe("connectors", () => {
+  it("adds an arrow between two elements", () => {
+    const connector = { id: "a->c", from: "a", to: "c" };
+    const next = boardReducer(state, { type: "addConnector", connector });
+    expect(next.connectors).toContainEqual(connector);
+  });
+
+  it("rejects self-loops, duplicates and missing elements", () => {
+    expect(canConnect(state, "a", "a")).toBe(false);
+    expect(canConnect(state, "a", "b")).toBe(false);
+    expect(canConnect(state, "a", "missing")).toBe(false);
+    expect(canConnect(state, "b", "a")).toBe(true); // the opposite direction is fine
+
+    const duplicate = { id: "dup", from: "a", to: "b" };
+    expect(boardReducer(state, { type: "addConnector", connector: duplicate })).toBe(state);
+  });
+
+  it("deletes an arrow but keeps the elements", () => {
+    const next = boardReducer(state, { type: "deleteConnector", id: "a->b" });
+    expect(next.connectors.map((c) => c.id)).toEqual(["b->c"]);
+    expect(next.elements).toBe(state.elements);
+  });
+
+  it("creates connectors with unique ids", () => {
+    expect(createConnector("a", "b")).toMatchObject({ from: "a", to: "b" });
+    expect(createConnector("a", "b").id).not.toBe(createConnector("a", "b").id);
   });
 });
 

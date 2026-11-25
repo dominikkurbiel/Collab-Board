@@ -2,7 +2,8 @@ import type { ElementType } from "@collab-board/shared";
 import { create } from "zustand";
 import { INITIAL_VIEWPORT, type Viewport } from "./viewport";
 
-export type Tool = "select" | ElementType;
+/** "connector" draws arrows between elements; the others create that element type. */
+export type Tool = "select" | ElementType | "connector";
 
 /**
  * Per-user UI state, kept OUT of the board document on purpose:

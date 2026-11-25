@@ -125,6 +125,68 @@
   --element-color: #ddd6fe;
 }
 
+/* --- Connectors (arrows) --- */
+
+/* 1×1 SVG at the world origin; overflow: visible lets it draw anywhere on the board */
+.connectors {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  overflow: visible;
+  pointer-events: none; /* only the hit areas are clickable */
+}
+
+.connector {
+  fill: none;
+  stroke: #44403c;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.connectorSelected,
+.connectorDraft {
+  stroke: #2563eb;
+}
+
+.connectorDraft {
+  stroke-dasharray: 6 4;
+}
+
+.connectorHitArea {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.drawing .connectorHitArea {
+  pointer-events: none;
+}
+
+/* Highlights the element an arrow will connect to when released */
+.connectTarget {
+  position: absolute;
+  border-radius: 6px;
+  outline: 3px solid #2563eb;
+  outline-offset: 4px;
+  pointer-events: none;
+}
+
+.connectTargetRound {
+  border-radius: 50%;
+}
+
+.arrowhead {
+  fill: #44403c;
+}
+
+.arrowheadSelected {
+  fill: #2563eb;
+}
+
 /* Preview while dragging out a new element */
 .draft {
   position: absolute;

@@ -33,3 +33,22 @@ export interface BoardElement {
   text: string;
   color: ElementColor;
 }
+
+/**
+ * An arrow between two elements. It stores only WHICH elements it connects, not where it
+ * is drawn: the line is computed from the elements' current positions, so it follows
+ * them when they are moved or resized.
+ */
+export interface BoardConnector {
+  id: string;
+  /** Id of the element the arrow starts at. */
+  from: string;
+  /** Id of the element the arrow points to. */
+  to: string;
+}
+
+/** Everything that is shared between users of a board. */
+export interface BoardDocument {
+  elements: BoardElement[];
+  connectors: BoardConnector[];
+}

@@ -41,7 +41,7 @@ pnpm dev           # web on :3000, server on :4000
 - [x] Type-safe API with tRPC + TanStack Query
 - [x] Board canvas: sticky notes, pan & zoom (infinite canvas)
 - [x] Shapes (rectangle, ellipse), tools and resize handles
-- [ ] Connectors (arrows between elements)
+- [x] Connectors (arrows between elements)
 - [ ] Real-time sync with Yjs over WebSockets
 - [ ] Live cursors and presence
 - [ ] Persistence in PostgreSQL

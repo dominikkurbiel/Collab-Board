@@ -1,9 +1,16 @@
 "use client";
 
-import { DEFAULT_ELEMENT_SIZE, type BoardElement, type ElementColor } from "@collab-board/shared";
+import {
+  DEFAULT_ELEMENT_SIZE,
+  type BoardDocument,
+  type BoardElement,
+  type ElementColor,
+  type ElementType,
+} from "@collab-board/shared";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import styles from "../board.module.css";
-import { boardReducer, createElement } from "../board-reducer";
+import { boardReducer, canConnect, createConnector, createElement } from "../board-reducer";
+import { boundaryPoint, elementAt, rectCenter } from "../geometry";
 import { useBoardUi, type Tool } from "../ui-store";
 import { getLocalPoint, useViewport } from "../use-viewport";
 import {
@@ -17,6 +24,7 @@ import {
   type Rect,
 } from "../viewport";
 import { CanvasElement } from "./CanvasElement";
+import { ConnectorLayer, type ConnectorDraft } from "./ConnectorLayer";
 import { SelectionOverlay } from "./SelectionOverlay";
 import { Toolbar } from "./Toolbar";
 
@@ -25,7 +33,18 @@ const ZOOM_STEP = 1.2;
 /** Smaller drags than this (in world units) count as a click: the shape gets its default size. */
 const MIN_DRAW_SIZE = 10;
 
-const SHORTCUTS: Record<string, Tool> = { v: "select", n: "note", r: "rectangle", o: "ellipse" };
+const SHORTCUTS: Record<string, Tool> = {
+  v: "select",
+  n: "note",
+  r: "rectangle",
+  o: "ellipse",
+  a: "connector",
+};
+
+/** Tools that create a new element (as opposed to "select" and "connector"). */
+function isElementTool(tool: Tool): tool is ElementType {
+  return tool !== "select" && tool !== "connector";
+}
 
 function isTypingTarget(target: EventTarget | null): boolean {
   return (
@@ -34,9 +53,18 @@ function isTypingTarget(target: EventTarget | null): boolean {
   );
 }
 
-export function Board({ initialElements }: { initialElements: BoardElement[] }) {
+/** An arrow being dragged out of an element. */
+interface Connecting {
+  fromId: string;
+  /** Mouse position in client pixels; converted to world coords on render, so it stays
+   *  correct even if the view is zoomed or scrolled mid-drag. */
+  clientX: number;
+  clientY: number;
+}
+
+export function Board({ initialDocument }: { initialDocument: BoardDocument }) {
   const boardRef = useRef<HTMLDivElement>(null);
-  const [state, dispatch] = useReducer(boardReducer, { elements: initialElements });
+  const [state, dispatch] = useReducer(boardReducer, initialDocument);
   const { viewport, setViewport, isPanning, panHandlers } = useViewport(boardRef);
 
   const tool = useBoardUi((s) => s.tool);
@@ -92,9 +120,11 @@ export function Board({ initialElements }: { initialElements: BoardElement[] }) 
   );
   const deleteSelected = useCallback(() => {
     if (!selectedId) return;
-    dispatch({ type: "deleteElement", id: selectedId });
+    // The selection can be an element or an arrow
+    const isConnector = state.connectors.some((c) => c.id === selectedId);
+    dispatch({ type: isConnector ? "deleteConnector" : "deleteElement", id: selectedId });
     select(null);
-  }, [selectedId, select]);
+  }, [selectedId, select, state.connectors]);
 
   const changeColor = (color: ElementColor) => {
     if (selectedId) dispatch({ type: "setElementColor", id: selectedId, color });
@@ -126,16 +156,43 @@ export function Board({ initialElements }: { initialElements: BoardElement[] }) 
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [deleteSelected, select, setTool]);
 
-  // --- Drawing new elements with a shape / note tool ---
+  // --- Drawing: new elements (shape / note tools) and arrows (connector tool) ---
 
   const drawStart = useRef<Point | null>(null);
   const [draft, setDraft] = useState<Rect | null>(null);
+  const [connecting, setConnecting] = useState<Connecting | null>(null);
+
+  // While dragging an arrow: where the cursor is, and which element it would connect to
+  const connectSource = connecting
+    ? (state.elements.find((el) => el.id === connecting.fromId) ?? null)
+    : null;
+  const connectPointer = connecting ? clientToWorld(connecting.clientX, connecting.clientY) : null;
+  const hovered = connectPointer ? elementAt(state.elements, connectPointer) : null;
+  const connectTarget =
+    connectSource && hovered && canConnect(state, connectSource.id, hovered.id) ? hovered : null;
+
+  let connectorDraft: ConnectorDraft | null = null;
+  if (connectSource && connectPointer) {
+    connectorDraft = {
+      from: connectSource,
+      // Over a valid target the preview snaps to its outline, so you see the final arrow
+      end: connectTarget ? boundaryPoint(connectTarget, rectCenter(connectSource)) : connectPointer,
+    };
+  }
 
   const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     if (event.target !== event.currentTarget) return; // elements handle their own events
     select(null);
 
-    if (tool !== "select" && event.button === 0) {
+    if (event.button === 0 && tool === "connector") {
+      // In drawing mode elements ignore the mouse, so find the one under the cursor ourselves
+      const source = elementAt(state.elements, clientToWorld(event.clientX, event.clientY));
+      if (source) {
+        event.currentTarget.setPointerCapture(event.pointerId);
+        setConnecting({ fromId: source.id, clientX: event.clientX, clientY: event.clientY });
+        return;
+      }
+    } else if (event.button === 0 && isElementTool(tool)) {
       event.currentTarget.setPointerCapture(event.pointerId);
       const start = clientToWorld(event.clientX, event.clientY);
       drawStart.current = start;
@@ -146,6 +203,10 @@ export function Board({ initialElements }: { initialElements: BoardElement[] }) 
   };
 
   const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (connecting) {
+      setConnecting({ ...connecting, clientX: event.clientX, clientY: event.clientY });
+      return;
+    }
     if (drawStart.current) {
       setDraft(rectFromPoints(drawStart.current, clientToWorld(event.clientX, event.clientY)));
       return;
@@ -154,8 +215,19 @@ export function Board({ initialElements }: { initialElements: BoardElement[] }) 
   };
 
   const handlePointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (connecting) {
+      if (connectSource && connectTarget) {
+        const connector = createConnector(connectSource.id, connectTarget.id);
+        dispatch({ type: "addConnector", connector });
+        select(connector.id);
+        setTool("select");
+      }
+      setConnecting(null);
+      return;
+    }
+
     const start = drawStart.current;
-    if (!start || tool === "select") {
+    if (!start || !isElementTool(tool)) {
       panHandlers.onPointerUp();
       return;
     }
@@ -207,6 +279,14 @@ export function Board({ initialElements }: { initialElements: BoardElement[] }) 
             transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
           }}
         >
+          <ConnectorLayer
+            elements={state.elements}
+            connectors={state.connectors}
+            selectedId={selectedId}
+            draft={connectorDraft}
+            onSelect={select}
+          />
+
           {state.elements.map((element) => (
             <CanvasElement
               key={element.id}
@@ -219,7 +299,21 @@ export function Board({ initialElements }: { initialElements: BoardElement[] }) 
             />
           ))}
 
-          {draft && tool !== "select" && (
+          {connectTarget && (
+            <div
+              className={`${styles.connectTarget} ${
+                connectTarget.type === "ellipse" ? styles.connectTargetRound : ""
+              }`}
+              style={{
+                left: connectTarget.x,
+                top: connectTarget.y,
+                width: connectTarget.width,
+                height: connectTarget.height,
+              }}
+            />
+          )}
+
+          {draft && isElementTool(tool) && (
             <div
               className={`${styles.draft} ${styles[tool]}`}
               style={{ left: draft.x, top: draft.y, width: draft.width, height: draft.height }}
@@ -252,8 +346,8 @@ export function Board({ initialElements }: { initialElements: BoardElement[] }) 
       </div>
 
       <p className={styles.hint}>
-        V select · N note · R rectangle · O ellipse · drag to draw · scroll to pan · ⌘/Ctrl + scroll
-        to zoom
+        V select · N note · R rectangle · O ellipse · A arrow (drag between elements) · scroll to
+        pan · ⌘/Ctrl + scroll to zoom
       </p>
     </div>
   );

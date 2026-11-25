@@ -1,7 +1,7 @@
-import type { BoardElement } from "@collab-board/shared";
+import type { BoardDocument, BoardElement } from "@collab-board/shared";
 
 /** Starting content, so the demo board isn't empty. Fixed ids keep SSR and client in sync. */
-export const DEMO_ELEMENTS: BoardElement[] = [
+const DEMO_ELEMENTS: BoardElement[] = [
   {
     id: "demo-1",
     type: "note",
@@ -53,3 +53,11 @@ export const DEMO_ELEMENTS: BoardElement[] = [
     color: "blue",
   },
 ];
+
+export const DEMO_BOARD: BoardDocument = {
+  elements: DEMO_ELEMENTS,
+  connectors: [
+    { id: "demo-arrow-1", from: "demo-1", to: "demo-2" },
+    { id: "demo-arrow-2", from: "demo-3", to: "demo-4" },
+  ],
+};

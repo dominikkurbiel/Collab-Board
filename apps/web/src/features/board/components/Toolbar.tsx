@@ -10,6 +10,7 @@ const TOOLS: { tool: Tool; label: string; shortcut: string }[] = [
   { tool: "note", label: "Note", shortcut: "N" },
   { tool: "rectangle", label: "Rectangle", shortcut: "R" },
   { tool: "ellipse", label: "Ellipse", shortcut: "O" },
+  { tool: "connector", label: "Arrow", shortcut: "A" },
 ];
 
 interface ToolbarProps {
@@ -39,6 +40,8 @@ export function Toolbar({
 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const hasSelection = selectedId !== null;
+  // Arrows have no color (yet), so the swatches need a selected element, not just a selection
+  const canChangeColor = selectedColor !== null;
 
   // Selecting another element (or none) cancels a pending delete confirmation
   useEffect(() => {
@@ -71,10 +74,10 @@ export function Toolbar({
             className={`${styles.swatch} ${styles[color]} ${
               selectedColor === color ? styles.swatchActive : ""
             }`}
-            disabled={!hasSelection}
+            disabled={!canChangeColor}
             onClick={() => onColorChange(color)}
             aria-label={`Color: ${color}`}
-            title={hasSelection ? color : "Select an element first"}
+            title={canChangeColor ? color : "Select an element first"}
           />
         ))}
       </div>
