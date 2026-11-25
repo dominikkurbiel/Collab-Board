@@ -10,6 +10,7 @@ import {
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { WebsocketProvider } from "y-websocket";
 import * as Y from "yjs";
+import type { Awareness } from "./use-presence";
 
 const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:4000/ws";
 
@@ -60,10 +61,13 @@ export function useBoardDocument(boardId: string) {
   );
 
   const [status, setStatus] = useState<ConnectionStatus>("connecting");
+  // Presence channel (cursors, who is online); exists while this board is open
+  const [awareness, setAwareness] = useState<Awareness | null>(null);
 
   useEffect(() => {
     // Connects to `${WS_URL}/${boardId}` and keeps reconnecting if the connection drops
     const provider = new WebsocketProvider(WS_URL, boardId, doc);
+    setAwareness(provider.awareness);
     let hasSynced = false;
 
     provider.on("sync", (isSynced: boolean) => {
@@ -77,12 +81,13 @@ export function useBoardDocument(boardId: string) {
     });
 
     return () => {
-      provider.destroy();
+      provider.destroy(); // also tells others we left, so our cursor disappears
+      setAwareness(null);
       setStatus("connecting");
     };
   }, [boardId, doc]);
 
   const dispatch = useCallback((action: BoardAction) => applyBoardAction(doc, action), [doc]);
 
-  return { board, dispatch, status };
+  return { board, dispatch, status, awareness };
 }

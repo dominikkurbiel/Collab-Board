@@ -43,7 +43,7 @@ pnpm dev           # web on :3000, server on :4000
 - [x] Shapes (rectangle, ellipse), tools and resize handles
 - [x] Connectors (arrows between elements)
 - [x] Real-time sync with Yjs over WebSockets
-- [ ] Live cursors and presence
+- [x] Live cursors and presence
 - [ ] Persistence in PostgreSQL
 - [ ] Create boards: anyone can create a board, optionally password-protected, and get a
       shareable link (`/board/<id>`)

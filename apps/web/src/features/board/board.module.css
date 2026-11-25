@@ -344,11 +344,18 @@
   left: 16px;
 }
 
-/* Connection status (top-right) */
-.status {
+/* --- Presence: who's here, connection status, other people's cursors --- */
+
+.topBar {
   position: absolute;
   top: 16px;
   right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.status {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -384,4 +391,66 @@
   to {
     opacity: 0.3;
   }
+}
+
+.presence {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-left: -8px; /* overlapping avatar stack */
+  border: 2px solid #fff;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.avatarMore {
+  background: #78716c;
+}
+
+/* Screen-space layer above the board; never catches the mouse */
+.cursors {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cursor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* Updates arrive ~20 times per second: a short transition smooths the jumps */
+  transition: transform 80ms linear;
+  will-change: transform;
+}
+
+.cursorIcon {
+  display: block;
+  fill: var(--cursor-color);
+  stroke: #fff;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.25));
+}
+
+.cursorLabel {
+  position: absolute;
+  top: 16px;
+  left: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--cursor-color);
+  color: #fff;
+  font-size: 12px;
+  white-space: nowrap;
 }

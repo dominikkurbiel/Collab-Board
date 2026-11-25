@@ -14,6 +14,7 @@ import styles from "../board.module.css";
 import { boundaryPoint, elementAt, rectCenter } from "../geometry";
 import { useBoardUi, type Tool } from "../ui-store";
 import { useBoardDocument, type ConnectionStatus } from "../use-board-document";
+import { useLocalPresence } from "../use-presence";
 import { getLocalPoint, useViewport } from "../use-viewport";
 import {
   INITIAL_VIEWPORT,
@@ -27,6 +28,8 @@ import {
 } from "../viewport";
 import { CanvasElement } from "./CanvasElement";
 import { ConnectorLayer, type ConnectorDraft } from "./ConnectorLayer";
+import { PresenceList } from "./PresenceList";
+import { RemoteCursors } from "./RemoteCursors";
 import { SelectionOverlay } from "./SelectionOverlay";
 import { Toolbar } from "./Toolbar";
 
@@ -67,7 +70,8 @@ interface Connecting {
 export function Board({ boardId }: { boardId: string }) {
   const boardRef = useRef<HTMLDivElement>(null);
   // The shared document (synced live with everyone on this board)
-  const { board, dispatch, status } = useBoardDocument(boardId);
+  const { board, dispatch, status, awareness } = useBoardDocument(boardId);
+  const shareCursor = useLocalPresence(awareness);
   const { viewport, setViewport, isPanning, panHandlers } = useViewport(boardRef);
 
   const tool = useBoardUi((s) => s.tool);
@@ -256,7 +260,12 @@ export function Board({ boardId }: { boardId: string }) {
   const gridSize = GRID_SIZE * viewport.zoom;
 
   return (
-    <div className={styles.container}>
+    <div
+      className={styles.container}
+      // Share our cursor with others, in world coordinates (also while dragging or resizing)
+      onPointerMove={(event) => shareCursor(clientToWorld(event.clientX, event.clientY))}
+      onPointerLeave={() => shareCursor(null)}
+    >
       <div
         ref={boardRef}
         className={[
@@ -344,7 +353,12 @@ export function Board({ boardId }: { boardId: string }) {
         onZoomToFit={() => setViewport(fitToContent(board.elements, boardSize))}
       />
 
-      <ConnectionBadge status={status} />
+      <RemoteCursors awareness={awareness} />
+
+      <div className={styles.topBar}>
+        <PresenceList awareness={awareness} />
+        <ConnectionBadge status={status} />
+      </div>
 
       <div className={styles.position} aria-live="polite">
         x: {Math.round(viewCenter.x)}, y: {Math.round(viewCenter.y)}
