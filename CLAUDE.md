@@ -6,7 +6,7 @@ readable architecture matter more than shipping fast.
 ## Stack
 
 - **Monorepo:** pnpm workspaces (pnpm 8, Node 20.9+)
-- **apps/web:** Next.js 16 (App Router), React 19, TanStack Query
+- **apps/web:** Next.js 16 (App Router), React 19, TanStack Query, Zustand
 - **apps/server:** Fastify 5, tRPC 11, Zod 4
 - **packages/shared:** constants shared by web and server (built to `dist/` with `tsc`)
 - **Planned:** Yjs (CRDT) over WebSockets, PostgreSQL, Redis pub/sub
@@ -34,6 +34,13 @@ pnpm services:up    # start PostgreSQL + Redis
 - **REST is only for infrastructure:** `GET /health` stays plain HTTP for Docker / Coolify checks.
 - **Web data fetching:** `useTRPC()` + TanStack Query (`useQuery(trpc.x.y.queryOptions(...))`).
   Providers are in `apps/web/src/app/providers.tsx`.
+- **Board state is split in two:**
+  - the board **document** (elements) lives in a pure reducer,
+    `apps/web/src/features/board/board-reducer.ts` (to be replaced by Yjs for real-time sync);
+  - **per-user UI state** (tool, viewport, selection) lives in the Zustand store
+    `apps/web/src/features/board/ui-store.ts` and is never synced to other users.
+- Elements store **world coordinates**; convert with the helpers in
+  `apps/web/src/features/board/viewport.ts` (`screenToWorld`, `worldToScreen`, ...).
 - Components are Server Components by default; add `"use client"` only where needed.
 - Server source uses ESM with `.js` extensions in relative imports (NodeNext).
 
