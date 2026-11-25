@@ -2,16 +2,18 @@
 
 import {
   DEFAULT_ELEMENT_SIZE,
-  type BoardDocument,
+  canConnect,
+  createConnector,
+  createElement,
   type BoardElement,
   type ElementColor,
   type ElementType,
 } from "@collab-board/shared";
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "../board.module.css";
-import { boardReducer, canConnect, createConnector, createElement } from "../board-reducer";
 import { boundaryPoint, elementAt, rectCenter } from "../geometry";
 import { useBoardUi, type Tool } from "../ui-store";
+import { useBoardDocument, type ConnectionStatus } from "../use-board-document";
 import { getLocalPoint, useViewport } from "../use-viewport";
 import {
   INITIAL_VIEWPORT,
@@ -62,9 +64,10 @@ interface Connecting {
   clientY: number;
 }
 
-export function Board({ initialDocument }: { initialDocument: BoardDocument }) {
+export function Board({ boardId }: { boardId: string }) {
   const boardRef = useRef<HTMLDivElement>(null);
-  const [state, dispatch] = useReducer(boardReducer, initialDocument);
+  // The shared document (synced live with everyone on this board)
+  const { board, dispatch, status } = useBoardDocument(boardId);
   const { viewport, setViewport, isPanning, panHandlers } = useViewport(boardRef);
 
   const tool = useBoardUi((s) => s.tool);
@@ -72,7 +75,7 @@ export function Board({ initialDocument }: { initialDocument: BoardDocument }) {
   const selectedId = useBoardUi((s) => s.selectedId);
   const select = useBoardUi((s) => s.select);
 
-  const selectedElement = state.elements.find((el) => el.id === selectedId) ?? null;
+  const selectedElement = board.elements.find((el) => el.id === selectedId) ?? null;
 
   // Board size in screen pixels, kept up to date when the window is resized
   const [boardSize, setBoardSize] = useState({ width: 0, height: 0 });
@@ -104,27 +107,27 @@ export function Board({ initialDocument }: { initialDocument: BoardDocument }) {
       select(id);
       dispatch({ type: "bringToFront", id });
     },
-    [select],
+    [select, dispatch],
   );
   const moveElement = useCallback(
     (id: string, x: number, y: number) => dispatch({ type: "moveElement", id, x, y }),
-    [],
+    [dispatch],
   );
   const resizeElement = useCallback(
     (id: string, rect: Rect) => dispatch({ type: "resizeElement", id, rect }),
-    [],
+    [dispatch],
   );
   const changeText = useCallback(
     (id: string, text: string) => dispatch({ type: "updateElementText", id, text }),
-    [],
+    [dispatch],
   );
   const deleteSelected = useCallback(() => {
     if (!selectedId) return;
     // The selection can be an element or an arrow
-    const isConnector = state.connectors.some((c) => c.id === selectedId);
+    const isConnector = board.connectors.some((c) => c.id === selectedId);
     dispatch({ type: isConnector ? "deleteConnector" : "deleteElement", id: selectedId });
     select(null);
-  }, [selectedId, select, state.connectors]);
+  }, [selectedId, select, board.connectors, dispatch]);
 
   const changeColor = (color: ElementColor) => {
     if (selectedId) dispatch({ type: "setElementColor", id: selectedId, color });
@@ -164,12 +167,12 @@ export function Board({ initialDocument }: { initialDocument: BoardDocument }) {
 
   // While dragging an arrow: where the cursor is, and which element it would connect to
   const connectSource = connecting
-    ? (state.elements.find((el) => el.id === connecting.fromId) ?? null)
+    ? (board.elements.find((el) => el.id === connecting.fromId) ?? null)
     : null;
   const connectPointer = connecting ? clientToWorld(connecting.clientX, connecting.clientY) : null;
-  const hovered = connectPointer ? elementAt(state.elements, connectPointer) : null;
+  const hovered = connectPointer ? elementAt(board.elements, connectPointer) : null;
   const connectTarget =
-    connectSource && hovered && canConnect(state, connectSource.id, hovered.id) ? hovered : null;
+    connectSource && hovered && canConnect(board, connectSource.id, hovered.id) ? hovered : null;
 
   let connectorDraft: ConnectorDraft | null = null;
   if (connectSource && connectPointer) {
@@ -186,7 +189,7 @@ export function Board({ initialDocument }: { initialDocument: BoardDocument }) {
 
     if (event.button === 0 && tool === "connector") {
       // In drawing mode elements ignore the mouse, so find the one under the cursor ourselves
-      const source = elementAt(state.elements, clientToWorld(event.clientX, event.clientY));
+      const source = elementAt(board.elements, clientToWorld(event.clientX, event.clientY));
       if (source) {
         event.currentTarget.setPointerCapture(event.pointerId);
         setConnecting({ fromId: source.id, clientX: event.clientX, clientY: event.clientY });
@@ -280,14 +283,14 @@ export function Board({ initialDocument }: { initialDocument: BoardDocument }) {
           }}
         >
           <ConnectorLayer
-            elements={state.elements}
-            connectors={state.connectors}
+            elements={board.elements}
+            connectors={board.connectors}
             selectedId={selectedId}
             draft={connectorDraft}
             onSelect={select}
           />
 
-          {state.elements.map((element) => (
+          {board.elements.map((element) => (
             <CanvasElement
               key={element.id}
               element={element}
@@ -338,8 +341,10 @@ export function Board({ initialDocument }: { initialDocument: BoardDocument }) {
         onZoomIn={() => setViewport((v) => zoomAt(v, boardCenter, ZOOM_STEP))}
         onZoomOut={() => setViewport((v) => zoomAt(v, boardCenter, 1 / ZOOM_STEP))}
         onResetView={() => setViewport(INITIAL_VIEWPORT)}
-        onZoomToFit={() => setViewport(fitToContent(state.elements, boardSize))}
+        onZoomToFit={() => setViewport(fitToContent(board.elements, boardSize))}
       />
+
+      <ConnectionBadge status={status} />
 
       <div className={styles.position} aria-live="polite">
         x: {Math.round(viewCenter.x)}, y: {Math.round(viewCenter.y)}
@@ -349,6 +354,21 @@ export function Board({ initialDocument }: { initialDocument: BoardDocument }) {
         V select · N note · R rectangle · O ellipse · A arrow (drag between elements) · scroll to
         pan · ⌘/Ctrl + scroll to zoom
       </p>
+    </div>
+  );
+}
+
+const STATUS_LABELS: Record<ConnectionStatus, string> = {
+  connecting: "Connecting…",
+  online: "Live",
+  offline: "Offline: changes will sync when you reconnect",
+};
+
+function ConnectionBadge({ status }: { status: ConnectionStatus }) {
+  return (
+    <div className={styles.status} data-status={status} role="status">
+      <span className={styles.statusDot} />
+      {STATUS_LABELS[status]}
     </div>
   );
 }

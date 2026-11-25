@@ -1,6 +1,9 @@
-import type { BoardDocument, BoardElement } from "@collab-board/shared";
+import type { BoardDocument, BoardElement } from "./board.js";
 
-/** Starting content, so the demo board isn't empty. Fixed ids keep SSR and client in sync. */
+/** Id of the public demo board, the one linked from the home page. */
+export const DEMO_BOARD_ID = "demo";
+
+/** Starting content of the demo board, loaded by the server when the room is created. */
 const DEMO_ELEMENTS: BoardElement[] = [
   {
     id: "demo-1",

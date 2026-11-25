@@ -9,8 +9,8 @@ Real-time collaborative whiteboard: share a link, see each other's cursors and e
 | Layer    | Technology                                                       |
 | -------- | ---------------------------------------------------------------- |
 | Frontend | Next.js (App Router), React, TypeScript, TanStack Query, Zustand |
-| Backend  | Node.js, Fastify, tRPC, Zod, WebSockets _(planned)_              |
-| Sync     | Yjs (CRDT) _(planned)_                                           |
+| Backend  | Node.js, Fastify, tRPC, Zod, WebSockets                          |
+| Sync     | Yjs (CRDT)                                                       |
 | Data     | PostgreSQL, Redis _(planned)_                                    |
 | Tooling  | pnpm workspaces, Docker Compose, Prettier, Vitest                |
 
@@ -42,10 +42,12 @@ pnpm dev           # web on :3000, server on :4000
 - [x] Board canvas: sticky notes, pan & zoom (infinite canvas)
 - [x] Shapes (rectangle, ellipse), tools and resize handles
 - [x] Connectors (arrows between elements)
-- [ ] Real-time sync with Yjs over WebSockets
+- [x] Real-time sync with Yjs over WebSockets
 - [ ] Live cursors and presence
 - [ ] Persistence in PostgreSQL
-- [ ] Horizontal scaling with Redis pub/sub
+- [ ] Create boards: anyone can create a board, optionally password-protected, and get a
+      shareable link (`/board/<id>`)
 - [ ] Share links with view / edit permissions
+- [ ] Horizontal scaling with Redis pub/sub
 - [ ] CI (GitHub Actions) and Docker images
 - [ ] Live demo

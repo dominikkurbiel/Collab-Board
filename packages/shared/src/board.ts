@@ -1,3 +1,10 @@
+/** Board ids appear in URLs, so keep them short and URL-safe. */
+export const BOARD_ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+
+export function isValidBoardId(id: string): boolean {
+  return BOARD_ID_PATTERN.test(id);
+}
+
 export const ELEMENT_TYPES = ["note", "rectangle", "ellipse"] as const;
 
 export type ElementType = (typeof ELEMENT_TYPES)[number];

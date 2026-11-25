@@ -8,8 +8,11 @@ readable architecture matter more than shipping fast.
 - **Monorepo:** pnpm workspaces (pnpm 8, Node 20.9+)
 - **apps/web:** Next.js 16 (App Router), React 19, TanStack Query, Zustand
 - **apps/server:** Fastify 5, tRPC 11, Zod 4
-- **packages/shared:** constants shared by web and server (built to `dist/` with `tsc`)
-- **Planned:** Yjs (CRDT) over WebSockets, PostgreSQL, Redis pub/sub
+- **packages/shared:** types, the Yjs board document and demo content, used by web and server
+  (built to `dist/` with `tsc`)
+- **Real-time:** Yjs (CRDT) over WebSockets (`@fastify/websocket` + `y-protocols` on the server,
+  `y-websocket` client in the browser)
+- **Planned:** PostgreSQL, Redis pub/sub
 - **Local services:** Docker Compose (PostgreSQL 17, Redis 7)
 
 ## Commands
@@ -33,11 +36,14 @@ pnpm services:up    # start PostgreSQL + Redis
 - **Validation:** every procedure input is a Zod schema (`.input(z.object(...))`).
 - **Per-request context** (`apps/server/src/trpc/context.ts`) is where the user, DB client etc. go.
 - **REST is only for infrastructure:** `GET /health` stays plain HTTP for Docker / Coolify checks.
+- **Real-time endpoint:** `GET /ws/:boardId` (WebSocket), one in-memory `Room` per board in
+  `apps/server/src/realtime/`. Origin and board id are checked in `preValidation`, before the upgrade.
 - **Web data fetching:** `useTRPC()` + TanStack Query (`useQuery(trpc.x.y.queryOptions(...))`).
   Providers are in `apps/web/src/app/providers.tsx`.
 - **Board state is split in two:**
-  - the board **document** (elements) lives in a pure reducer,
-    `apps/web/src/features/board/board-reducer.ts` (to be replaced by Yjs for real-time sync);
+  - the board **document** (elements, connectors) is a Yjs `Y.Doc`, shared live with everyone on
+    the board. Change it only through `applyBoardAction` and read it with `readBoard`
+    (`packages/shared/src/board-doc.ts`); the web app uses it via `useBoardDocument(boardId)`;
   - **per-user UI state** (tool, viewport, selection) lives in the Zustand store
     `apps/web/src/features/board/ui-store.ts` and is never synced to other users.
 - Elements store **world coordinates**; convert with the helpers in

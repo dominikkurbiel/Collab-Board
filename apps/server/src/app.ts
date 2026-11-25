@@ -3,6 +3,7 @@ import { fastifyTRPCPlugin, type FastifyTRPCPluginOptions } from "@trpc/server/a
 import Fastify from "fastify";
 import { config } from "./config.js";
 import { getHealth } from "./health.js";
+import { realtimePlugin } from "./realtime/plugin.js";
 import { createContext } from "./trpc/context.js";
 import { appRouter, type AppRouter } from "./trpc/router.js";
 
@@ -28,6 +29,9 @@ export async function buildApp() {
       },
     } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
   });
+
+  // Live collaboration over WebSockets (Yjs)
+  await app.register(realtimePlugin);
 
   return app;
 }

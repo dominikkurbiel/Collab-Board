@@ -343,3 +343,45 @@
 .hint {
   left: 16px;
 }
+
+/* Connection status (top-right) */
+.status {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.12);
+  font-size: 12px;
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.statusDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #a8a29e;
+}
+
+.status[data-status="online"] .statusDot {
+  background: #16a34a;
+}
+
+.status[data-status="offline"] .statusDot {
+  background: #dc2626;
+}
+
+.status[data-status="connecting"] .statusDot {
+  animation: pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+  to {
+    opacity: 0.3;
+  }
+}

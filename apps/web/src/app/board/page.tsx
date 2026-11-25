@@ -1,11 +1,7 @@
-import type { Metadata } from "next";
-import { Board } from "@/features/board/components/Board";
-import { DEMO_BOARD } from "@/features/board/demo-board";
+import { DEMO_BOARD_ID } from "@collab-board/shared";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Demo board · Collab Board",
-};
-
-export default function BoardPage() {
-  return <Board initialDocument={DEMO_BOARD} />;
+/** `/board` (the old demo URL) now points to the public demo board. */
+export default function BoardIndexPage() {
+  redirect(`/board/${DEMO_BOARD_ID}`);
 }
