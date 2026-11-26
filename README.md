@@ -28,9 +28,10 @@ packages/
 
 ## Getting started
 
-Requirements: Node.js 24 (LTS, see `.nvmrc`), pnpm 8+, Docker.
+Requirements: Node.js 24 (LTS, see `.nvmrc`), Docker. pnpm comes with Node through Corepack (`corepack enable`), in the version pinned in `package.json`.
 
 ```bash
+corepack enable    # once: provides pnpm in the version pinned in package.json
 pnpm install
 pnpm services:up   # PostgreSQL in Docker (host port 5433)
 pnpm dev           # web on :3000, server on :4000 (applies DB migrations on start)

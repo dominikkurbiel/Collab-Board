@@ -5,7 +5,7 @@ readable architecture matter more than shipping fast.
 
 ## Stack
 
-- **Monorepo:** pnpm workspaces (pnpm 8, Node 24 LTS; version in `.nvmrc`)
+- **Monorepo:** pnpm workspaces (pnpm 12 via Corepack, pinned in `packageManager`; Node 24 LTS, version in `.nvmrc`)
 - **apps/web:** Next.js 16 (App Router), React 19, TanStack Query, Zustand
 - **apps/server:** Fastify 5, tRPC 11, Zod 4
 - **packages/shared:** types, the Yjs board document and demo content, used by web and server
@@ -78,6 +78,8 @@ pnpm --filter @collab-board/server db:generate  # SQL migration from schema chan
 - Code, comments, commit messages and README in **English**.
 - Conventional Commits: `feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:`, `ci:`, `build:`.
   One logical change per commit, so the history shows real step-by-step progress.
+- Dependency permissions live in `pnpm-workspace.yaml` (`allowBuilds`, `permissions`): deny by
+  default; allow a build script only when the package really needs it.
 - Don't add a library for the whiteboard canvas itself (no tldraw/excalidraw): building it is the
   point of the project.
 - Keep the README roadmap up to date when a feature is finished.

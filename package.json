@@ -2,7 +2,7 @@
   "name": "collab-board",
   "private": true,
   "description": "Real-time collaborative whiteboard (Next.js + Node.js + Yjs)",
-  "packageManager": "pnpm@8.14.3",
+  "packageManager": "pnpm@12.23.0",
   "engines": {
     "node": ">=24"
   },

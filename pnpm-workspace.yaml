@@ -1,3 +1,12 @@
 packages:
   - "apps/*"
   - "packages/*"
+allowBuilds:
+  esbuild: false
+permissions:
+  "@trpc/client":
+    skills: false
+  "@trpc/server":
+    skills: false
+  "@trpc/tanstack-react-query":
+    skills: false
