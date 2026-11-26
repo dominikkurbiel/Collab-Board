@@ -28,6 +28,9 @@ export class Room {
   /** Every connection, with the awareness client ids it owns (cleaned up on disconnect). */
   private readonly connections = new Map<WebSocket, Set<number>>();
 
+  /** Called when the last person leaves (the room manager may then save and unload it). */
+  onEmpty: (() => void) | null = null;
+
   constructor(
     readonly id: string,
     private readonly log: FastifyBaseLogger,
@@ -66,7 +69,11 @@ export class Room {
     return this.connections.size;
   }
 
-  addConnection(socket: WebSocket): void {
+  /**
+   * @param earlyMessages messages the client sent while the room was still loading from
+   *   the database; they are processed right after the handshake so nothing is lost
+   */
+  addConnection(socket: WebSocket, earlyMessages: readonly ArrayBuffer[] = []): void {
     socket.binaryType = "arraybuffer";
     this.connections.set(socket, new Set());
 
@@ -91,6 +98,8 @@ export class Room {
       );
       this.send(socket, encoding.toUint8Array(awarenessEncoder));
     }
+
+    for (const message of earlyMessages) this.handleMessage(socket, new Uint8Array(message));
   }
 
   private handleMessage(socket: WebSocket, message: Uint8Array): void {
@@ -125,6 +134,13 @@ export class Room {
     this.connections.delete(socket);
     // The user is gone: drop their cursor etc. for everyone else
     awarenessProtocol.removeAwarenessStates(this.awareness, [...owned], null);
+    if (this.connections.size === 0) this.onEmpty?.();
+  }
+
+  /** Frees the room's memory. Only called once it is empty and saved. */
+  destroy(): void {
+    this.awareness.destroy();
+    this.doc.destroy();
   }
 
   private broadcast(message: Uint8Array, except?: unknown): void {

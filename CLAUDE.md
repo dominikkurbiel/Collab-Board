@@ -12,8 +12,9 @@ readable architecture matter more than shipping fast.
   (built to `dist/` with `tsc`)
 - **Real-time:** Yjs (CRDT) over WebSockets (`@fastify/websocket` + `y-protocols` on the server,
   `y-websocket` client in the browser)
-- **Planned:** PostgreSQL, Redis pub/sub
-- **Local services:** Docker Compose (PostgreSQL 17, Redis 7)
+- **Database:** PostgreSQL 17 with Drizzle ORM (`pg` driver), SQL migrations in `apps/server/drizzle/`
+- **Planned:** Redis pub/sub
+- **Local services:** Docker Compose (PostgreSQL 17 on host port 5433, Redis 7)
 
 ## Commands
 
@@ -25,7 +26,8 @@ pnpm build          # production build of everything
 pnpm typecheck      # TypeScript check in all packages
 pnpm test           # unit tests (Vitest)
 pnpm format         # Prettier
-pnpm services:up    # start PostgreSQL + Redis
+pnpm services:up    # start PostgreSQL + Redis (needed by the server)
+pnpm --filter @collab-board/server db:generate  # SQL migration from schema changes
 ```
 
 ## Architecture
@@ -38,6 +40,11 @@ pnpm services:up    # start PostgreSQL + Redis
 - **REST is only for infrastructure:** `GET /health` stays plain HTTP for Docker / Coolify checks.
 - **Real-time endpoint:** `GET /ws/:boardId` (WebSocket), one in-memory `Room` per board in
   `apps/server/src/realtime/`. Origin and board id are checked in `preValidation`, before the upgrade.
+- **Persistence:** `RoomManager` loads a room from `BoardStorage` on first connection, saves the Yjs
+  state with a debounce, saves and unloads it when empty, and saves everything on shutdown.
+  Realtime code depends only on the `BoardStorage` interface (Postgres in the app, in-memory in tests).
+- **Database changes:** edit `apps/server/src/db/schema.ts`, run `db:generate`, commit the generated
+  migration. Migrations run automatically when the server starts. Never edit applied migrations.
 - **Web data fetching:** `useTRPC()` + TanStack Query (`useQuery(trpc.x.y.queryOptions(...))`).
   Providers are in `apps/web/src/app/providers.tsx`.
 - **Board state is split in two:**

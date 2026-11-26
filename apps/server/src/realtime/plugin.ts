@@ -1,10 +1,11 @@
 import websocket from "@fastify/websocket";
-import { BOARD_ID_PATTERN, DEMO_BOARD, DEMO_BOARD_ID, loadBoard } from "@collab-board/shared";
+import { BOARD_ID_PATTERN } from "@collab-board/shared";
 import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "ws";
 import { z } from "zod";
 import { config } from "../config.js";
-import { Room } from "./room.js";
+import { RoomManager } from "./room-manager.js";
+import type { BoardStorage } from "./storage/board-storage.js";
 
 const paramsSchema = z.object({ boardId: z.string().regex(BOARD_ID_PATTERN) });
 
@@ -12,24 +13,20 @@ const paramsSchema = z.object({ boardId: z.string().regex(BOARD_ID_PATTERN) });
 const MAX_MESSAGE_BYTES = 2 * 1024 * 1024;
 const PING_INTERVAL_MS = 30_000;
 
+export interface RealtimeOptions {
+  storage: BoardStorage;
+}
+
 /**
  * Real-time collaboration: one WebSocket endpoint per board, `/ws/<boardId>`.
- * Rooms live in memory for now; persistence in PostgreSQL comes in a later step.
+ * Rooms are loaded from storage on first use and saved while people edit.
  */
-export async function realtimePlugin(app: FastifyInstance) {
+export async function realtimePlugin(app: FastifyInstance, { storage }: RealtimeOptions) {
   await app.register(websocket, { options: { maxPayload: MAX_MESSAGE_BYTES } });
 
-  const rooms = new Map<string, Room>();
-
-  function getRoom(boardId: string): Room {
-    let room = rooms.get(boardId);
-    if (!room) {
-      room = new Room(boardId, app.log);
-      if (boardId === DEMO_BOARD_ID) loadBoard(room.doc, DEMO_BOARD);
-      rooms.set(boardId, room);
-    }
-    return room;
-  }
+  const rooms = new RoomManager(storage, app.log);
+  // Save every open board before the server stops (deploy, restart)
+  app.addHook("onClose", () => rooms.closeAll());
 
   app.get(
     "/ws/:boardId",
@@ -48,11 +45,30 @@ export async function realtimePlugin(app: FastifyInstance) {
         }
       },
     },
-    (socket, request) => {
+    async (socket, request) => {
       const { boardId } = paramsSchema.parse(request.params);
-      const room = getRoom(boardId);
-      room.addConnection(socket);
+
+      // The client starts syncing as soon as it connects, maybe before the room has
+      // loaded from the database: keep those first messages and replay them
+      const earlyMessages: ArrayBuffer[] = [];
+      const bufferMessage = (data: ArrayBuffer) => earlyMessages.push(data);
+      socket.binaryType = "arraybuffer";
+      socket.on("message", bufferMessage);
       keepAlive(socket);
+
+      let room;
+      try {
+        room = await rooms.getRoom(boardId);
+      } catch (error) {
+        app.log.error({ err: error, boardId }, "Could not load board");
+        socket.close(1011, "Could not load board"); // the client will retry
+        return;
+      } finally {
+        socket.off("message", bufferMessage);
+      }
+      if (socket.readyState !== socket.OPEN) return; // left while the board was loading
+
+      room.addConnection(socket, earlyMessages);
 
       app.log.info({ boardId, connections: room.connectionCount }, "Client joined board");
       socket.on("close", () => {

@@ -2,8 +2,10 @@ import cors from "@fastify/cors";
 import { fastifyTRPCPlugin, type FastifyTRPCPluginOptions } from "@trpc/server/adapters/fastify";
 import Fastify from "fastify";
 import { config } from "./config.js";
+import { createDatabase } from "./db/client.js";
 import { getHealth } from "./health.js";
 import { realtimePlugin } from "./realtime/plugin.js";
+import { PostgresBoardStorage } from "./realtime/storage/postgres-storage.js";
 import { createContext } from "./trpc/context.js";
 import { appRouter, type AppRouter } from "./trpc/router.js";
 
@@ -30,8 +32,13 @@ export async function buildApp() {
     } satisfies FastifyTRPCPluginOptions<AppRouter>["trpcOptions"],
   });
 
-  // Live collaboration over WebSockets (Yjs)
-  await app.register(realtimePlugin);
+  // PostgreSQL: apply pending migrations on startup, so a deploy is just "start the server"
+  const database = createDatabase(config.databaseUrl);
+  await database.migrate();
+  app.addHook("onClose", () => database.close());
+
+  // Live collaboration over WebSockets (Yjs), saved in PostgreSQL
+  await app.register(realtimePlugin, { storage: new PostgresBoardStorage(database.db) });
 
   return app;
 }
