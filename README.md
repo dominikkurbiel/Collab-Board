@@ -11,7 +11,7 @@ Real-time collaborative whiteboard: share a link, see each other's cursors and e
 | Frontend | Next.js (App Router), React, TypeScript, TanStack Query, Zustand |
 | Backend  | Node.js, Fastify, tRPC, Zod, WebSockets                          |
 | Sync     | Yjs (CRDT)                                                       |
-| Data     | PostgreSQL (Drizzle ORM), Redis _(planned)_                      |
+| Data     | PostgreSQL (Drizzle ORM)                                         |
 | Tooling  | pnpm workspaces, Docker Compose, Prettier, Vitest                |
 
 ## Project structure
@@ -31,7 +31,7 @@ Requirements: Node.js 20.9+, pnpm 8+, Docker.
 ```bash
 pnpm install
 cp .env.example .env
-pnpm services:up   # PostgreSQL (host port 5433) + Redis
+pnpm services:up   # PostgreSQL (host port 5433)
 pnpm dev           # web on :3000, server on :4000 (applies DB migrations on start)
 ```
 
@@ -47,7 +47,7 @@ pnpm dev           # web on :3000, server on :4000 (applies DB migrations on sta
 - [x] Persistence in PostgreSQL
 - [x] Create boards: anyone can create a board, optionally password-protected, and get a
       shareable link (`/board/<id>`)
-- [ ] Share links with view / edit permissions
-- [ ] Horizontal scaling with Redis pub/sub
 - [ ] CI (GitHub Actions) and Docker images
 - [ ] Live demo
+- [ ] Share links with view / edit permissions
+- [ ] _(stretch)_ Horizontal scaling with Redis pub/sub

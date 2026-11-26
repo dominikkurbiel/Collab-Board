@@ -13,8 +13,8 @@ readable architecture matter more than shipping fast.
 - **Real-time:** Yjs (CRDT) over WebSockets (`@fastify/websocket` + `y-protocols` on the server,
   `y-websocket` client in the browser)
 - **Database:** PostgreSQL 17 with Drizzle ORM (`pg` driver), SQL migrations in `apps/server/drizzle/`
-- **Planned:** Redis pub/sub
-- **Local services:** Docker Compose (PostgreSQL 17 on host port 5433, Redis 7)
+- **Stretch goal (not planned now):** Redis pub/sub for running several server instances
+- **Local services:** Docker Compose (PostgreSQL 17 on host port 5433)
 
 ## Commands
 
@@ -26,7 +26,7 @@ pnpm build          # production build of everything
 pnpm typecheck      # TypeScript check in all packages
 pnpm test           # unit tests (Vitest)
 pnpm format         # Prettier
-pnpm services:up    # start PostgreSQL + Redis (needed by the server)
+pnpm services:up    # start PostgreSQL (needed by the server)
 pnpm --filter @collab-board/server db:generate  # SQL migration from schema changes
 ```
 
