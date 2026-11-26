@@ -5,7 +5,7 @@ readable architecture matter more than shipping fast.
 
 ## Stack
 
-- **Monorepo:** pnpm workspaces (pnpm 8, Node 20.9+)
+- **Monorepo:** pnpm workspaces (pnpm 8, Node 24 LTS; version in `.nvmrc`)
 - **apps/web:** Next.js 16 (App Router), React 19, TanStack Query, Zustand
 - **apps/server:** Fastify 5, tRPC 11, Zod 4
 - **packages/shared:** types, the Yjs board document and demo content, used by web and server

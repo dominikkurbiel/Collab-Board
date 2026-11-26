@@ -4,7 +4,7 @@
   "description": "Real-time collaborative whiteboard (Next.js + Node.js + Yjs)",
   "packageManager": "pnpm@8.14.3",
   "engines": {
-    "node": ">=20.9"
+    "node": ">=24"
   },
   "scripts": {
     "dev": "pnpm --filter @collab-board/shared build && pnpm --parallel -r dev",

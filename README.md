@@ -26,7 +26,7 @@ packages/
 
 ## Getting started
 
-Requirements: Node.js 20.9+, pnpm 8+, Docker.
+Requirements: Node.js 24 (LTS, see `.nvmrc`), pnpm 8+, Docker.
 
 ```bash
 pnpm install
