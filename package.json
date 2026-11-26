@@ -11,7 +11,7 @@
     "dev:web": "pnpm --filter @collab-board/web dev",
     "dev:server": "pnpm --filter @collab-board/server dev",
     "build": "pnpm --filter @collab-board/shared build && pnpm --filter \"./apps/*\" build",
-    "typecheck": "pnpm -r typecheck",
+    "typecheck": "pnpm --filter @collab-board/shared build && pnpm -r typecheck",
     "test": "pnpm --filter @collab-board/shared build && pnpm -r test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",

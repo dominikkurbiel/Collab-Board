@@ -73,7 +73,7 @@ pnpm --filter @collab-board/server db:generate  # SQL migration from schema chan
 
 - TypeScript `strict` + `noUncheckedIndexedAccess`; no `any`.
 - Code, comments, commit messages and README in **English**.
-- Conventional Commits: `feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:`.
+- Conventional Commits: `feat:`, `fix:`, `chore:`, `refactor:`, `docs:`, `test:`, `ci:`, `build:`.
   One logical change per commit, so the history shows real step-by-step progress.
 - Don't add a library for the whiteboard canvas itself (no tldraw/excalidraw): building it is the
   point of the project.

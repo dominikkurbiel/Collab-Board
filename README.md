@@ -1,5 +1,7 @@
 # Collab Board
 
+[![CI](https://github.com/dominikkurbiel/Collab-Board/actions/workflows/ci.yml/badge.svg)](https://github.com/dominikkurbiel/Collab-Board/actions/workflows/ci.yml)
+
 Real-time collaborative whiteboard: share a link, see each other's cursors and edit the same board live.
 
 > 🚧 Work in progress. The project is being built step by step; see the roadmap below.
