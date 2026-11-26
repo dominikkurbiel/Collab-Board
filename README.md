@@ -45,7 +45,7 @@ pnpm dev           # web on :3000, server on :4000 (applies DB migrations on sta
 - [x] Real-time sync with Yjs over WebSockets
 - [x] Live cursors and presence
 - [x] Persistence in PostgreSQL
-- [ ] Create boards: anyone can create a board, optionally password-protected, and get a
+- [x] Create boards: anyone can create a board, optionally password-protected, and get a
       shareable link (`/board/<id>`)
 - [ ] Share links with view / edit permissions
 - [ ] Horizontal scaling with Redis pub/sub

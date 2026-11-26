@@ -48,6 +48,11 @@ pnpm --filter @collab-board/server db:generate  # SQL migration from schema chan
   state with a debounce, saves and unloads it when empty, and saves everything on shutdown.
   Realtime defines the `BoardStorage` interface (a port); the boards module implements it on
   PostgreSQL (an adapter); tests use the in-memory version.
+- **Board access** (`modules/boards/`): boards have random ids and an optional argon2id-hashed
+  password. Unlocking sets an httpOnly cookie with an HMAC-signed, per-board, expiring token.
+  `BoardService.getAccess` is the single source of truth, used by tRPC (`boards.access`) and by
+  the WebSocket `preValidation` (via the `checkAccess` port). The web `BoardGate` is only UX.
+- **Tests first for domain logic:** write the failing spec (`*.test.ts`) before the implementation.
 - **Database changes:** each module owns its tables in `modules/<name>/<name>.schema.ts`; edit it,
   run `db:generate`, commit the generated
   migration. Migrations run automatically when the server starts. Never edit applied migrations.

@@ -14,6 +14,7 @@ import styles from "../board.module.css";
 import { boundaryPoint, elementAt, rectCenter } from "../geometry";
 import { useBoardUi, type Tool } from "../ui-store";
 import { useBoardDocument, type ConnectionStatus } from "../use-board-document";
+import { CopyLinkButton } from "@/features/sharing/CopyLinkButton";
 import { useLocalPresence } from "../use-presence";
 import { getLocalPoint, useViewport } from "../use-viewport";
 import {
@@ -356,6 +357,7 @@ export function Board({ boardId }: { boardId: string }) {
       <RemoteCursors awareness={awareness} />
 
       <div className={styles.topBar}>
+        <CopyLinkButton label="Share" />
         <PresenceList awareness={awareness} />
         <ConnectionBadge status={status} />
       </div>

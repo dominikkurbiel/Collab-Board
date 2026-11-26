@@ -15,7 +15,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
   );
   const [trpcClient] = useState(() =>
     createTRPCClient<AppRouter>({
-      links: [httpBatchLink({ url: `${API_URL}/trpc` })],
+      links: [
+        httpBatchLink({
+          url: `${API_URL}/trpc`,
+          // The API is on another origin: send and accept cookies (board access) anyway
+          fetch: (url, options) => fetch(url, { ...options, credentials: "include" }),
+        }),
+      ],
     }),
   );
 
