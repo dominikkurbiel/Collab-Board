@@ -4,6 +4,10 @@
 
 Real-time collaborative whiteboard: share a link, see each other's cursors and edit the same board live.
 
+**Live demo: [collab-board.dominikkurbiel.dev](https://collab-board.dominikkurbiel.dev)**. Open the
+[demo board](https://collab-board.dominikkurbiel.dev/board/demo) in two browser windows (or on your
+phone) to see live sync and cursors, or create your own board, optionally password-protected.
+
 > 🚧 Work in progress. The project is being built step by step; see the roadmap below.
 
 ## Tech stack
@@ -68,6 +72,6 @@ typecheck, unit tests, production build, and a build of both Docker images.
 - [x] Create boards: anyone can create a board, optionally password-protected, and get a
       shareable link (`/board/<id>`)
 - [x] CI (GitHub Actions) and Docker images
-- [ ] Live demo
+- [x] Live demo (self-hosted VPS with Coolify, Traefik and Let's Encrypt)
 - [ ] Share links with view / edit permissions
 - [ ] _(stretch)_ Horizontal scaling with Redis pub/sub
