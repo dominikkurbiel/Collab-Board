@@ -32,10 +32,27 @@ Requirements: Node.js 24 (LTS, see `.nvmrc`), pnpm 8+, Docker.
 
 ```bash
 pnpm install
-cp .env.example .env
-pnpm services:up   # PostgreSQL (host port 5433)
+pnpm services:up   # PostgreSQL in Docker (host port 5433)
 pnpm dev           # web on :3000, server on :4000 (applies DB migrations on start)
 ```
+
+Development works without a `.env` file: every setting has a local default.
+
+### Run it like production (Docker)
+
+Both apps have a multi-stage `Dockerfile`; `docker-compose.prod.yml` runs them with PostgreSQL.
+
+```bash
+cp .env.example .env   # then set ACCESS_TOKEN_SECRET (openssl rand -base64 48)
+docker compose -f docker-compose.prod.yml up --build
+```
+
+Open http://localhost:3000. Stop `pnpm dev` first, both use ports 3000 and 4000.
+
+### Continuous integration
+
+Every push and pull request runs [GitHub Actions](.github/workflows/ci.yml): Prettier check,
+typecheck, unit tests, production build, and a build of both Docker images.
 
 ## Roadmap
 
@@ -49,7 +66,7 @@ pnpm dev           # web on :3000, server on :4000 (applies DB migrations on sta
 - [x] Persistence in PostgreSQL
 - [x] Create boards: anyone can create a board, optionally password-protected, and get a
       shareable link (`/board/<id>`)
-- [ ] CI (GitHub Actions) and Docker images
+- [x] CI (GitHub Actions) and Docker images
 - [ ] Live demo
 - [ ] Share links with view / edit permissions
 - [ ] _(stretch)_ Horizontal scaling with Redis pub/sub
