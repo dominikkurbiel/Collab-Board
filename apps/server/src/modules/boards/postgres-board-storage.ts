@@ -1,8 +1,11 @@
 import { eq, sql } from "drizzle-orm";
 import type { Database } from "../../db/client.js";
-import { boards } from "../../db/schema.js";
-import type { BoardStorage } from "./board-storage.js";
+import type { BoardStorage } from "../realtime/index.js";
+import { boards } from "./board.schema.js";
 
+/**
+ * Adapter: implements the realtime module's BoardStorage port on top of the boards table.
+ */
 export class PostgresBoardStorage implements BoardStorage {
   constructor(private readonly db: Database) {}
 

@@ -3,7 +3,7 @@ import type { FastifyBaseLogger } from "fastify";
 import * as Y from "yjs";
 import { DebouncedSaver } from "./debounced-saver.js";
 import { Room } from "./room.js";
-import type { BoardStorage } from "./storage/board-storage.js";
+import type { BoardStorage } from "./board-storage.js";
 
 /** Tags changes that come FROM storage (loading, seeding the demo): no need to save them. */
 const FROM_STORAGE = Symbol("from-storage");

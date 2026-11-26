@@ -3,9 +3,9 @@ import { BOARD_ID_PATTERN } from "@collab-board/shared";
 import type { FastifyInstance } from "fastify";
 import type { WebSocket } from "ws";
 import { z } from "zod";
-import { config } from "../config.js";
+import { config } from "../../config.js";
 import { RoomManager } from "./room-manager.js";
-import type { BoardStorage } from "./storage/board-storage.js";
+import type { BoardStorage } from "./board-storage.js";
 
 const paramsSchema = z.object({ boardId: z.string().regex(BOARD_ID_PATTERN) });
 

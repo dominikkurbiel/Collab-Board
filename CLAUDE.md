@@ -32,18 +32,24 @@ pnpm --filter @collab-board/server db:generate  # SQL migration from schema chan
 
 ## Architecture
 
-- **API = tRPC.** Procedures live in `apps/server/src/trpc/routers/<domain>.ts` and are merged in
+- **Server = modular monolith.** Features live in `apps/server/src/modules/<name>/` (`health`,
+  `realtime`, `boards`). A module imports another one **only through its `index.ts`** (its public
+  API), never its internal files. Shared infrastructure: `src/db/`, `src/trpc/`. `app.ts` is the
+  composition root that wires modules together.
+- **API = tRPC.** Procedures live in `modules/<name>/<name>.router.ts` and are merged in
   `apps/server/src/trpc/router.ts`. The web app imports **only the type** `AppRouter` from
   `@collab-board/server/trpc`. Never import server runtime code into the web app.
 - **Validation:** every procedure input is a Zod schema (`.input(z.object(...))`).
 - **Per-request context** (`apps/server/src/trpc/context.ts`) is where the user, DB client etc. go.
 - **REST is only for infrastructure:** `GET /health` stays plain HTTP for Docker / Coolify checks.
 - **Real-time endpoint:** `GET /ws/:boardId` (WebSocket), one in-memory `Room` per board in
-  `apps/server/src/realtime/`. Origin and board id are checked in `preValidation`, before the upgrade.
+  `apps/server/src/modules/realtime/`. Origin and board id are checked in `preValidation`, before the upgrade.
 - **Persistence:** `RoomManager` loads a room from `BoardStorage` on first connection, saves the Yjs
   state with a debounce, saves and unloads it when empty, and saves everything on shutdown.
-  Realtime code depends only on the `BoardStorage` interface (Postgres in the app, in-memory in tests).
-- **Database changes:** edit `apps/server/src/db/schema.ts`, run `db:generate`, commit the generated
+  Realtime defines the `BoardStorage` interface (a port); the boards module implements it on
+  PostgreSQL (an adapter); tests use the in-memory version.
+- **Database changes:** each module owns its tables in `modules/<name>/<name>.schema.ts`; edit it,
+  run `db:generate`, commit the generated
   migration. Migrations run automatically when the server starts. Never edit applied migrations.
 - **Web data fetching:** `useTRPC()` + TanStack Query (`useQuery(trpc.x.y.queryOptions(...))`).
   Providers are in `apps/web/src/app/providers.tsx`.

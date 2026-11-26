@@ -1,4 +1,4 @@
-import { healthRouter } from "./routers/health.js";
+import { healthRouter } from "../modules/health/index.js";
 import { router } from "./trpc.js";
 
 export const appRouter = router({

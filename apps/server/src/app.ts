@@ -3,9 +3,9 @@ import { fastifyTRPCPlugin, type FastifyTRPCPluginOptions } from "@trpc/server/a
 import Fastify from "fastify";
 import { config } from "./config.js";
 import { createDatabase } from "./db/client.js";
-import { getHealth } from "./health.js";
-import { realtimePlugin } from "./realtime/plugin.js";
-import { PostgresBoardStorage } from "./realtime/storage/postgres-storage.js";
+import { PostgresBoardStorage } from "./modules/boards/index.js";
+import { getHealth } from "./modules/health/index.js";
+import { realtimePlugin } from "./modules/realtime/index.js";
 import { createContext } from "./trpc/context.js";
 import { appRouter, type AppRouter } from "./trpc/router.js";
 

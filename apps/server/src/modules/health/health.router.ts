@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { getHealth } from "../../health.js";
-import { publicProcedure, router } from "../trpc.js";
+import { publicProcedure, router } from "../../trpc/trpc.js";
+import { getHealth } from "./health.js";
 
 export const healthRouter = router({
   check: publicProcedure.query(() => getHealth()),

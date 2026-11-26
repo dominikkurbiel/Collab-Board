@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { WebSocket } from "ws";
 import * as Y from "yjs";
 import { RoomManager } from "./room-manager.js";
-import { MemoryBoardStorage } from "./storage/memory-storage.js";
+import { MemoryBoardStorage } from "./memory-board-storage.js";
 
 const silentLog = {
   info: () => {},
