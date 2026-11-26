@@ -20,6 +20,9 @@ importers:
       '@collab-board/shared':
         specifier: workspace:^
         version: link:../../packages/shared
+      '@fastify/cookie':
+        specifier: ^11.1.5
+        version: 11.1.5
       '@fastify/cors':
         specifier: ^11.4.3
         version: 11.4.3
@@ -862,6 +865,13 @@ packages:
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       fast-uri: 4.2.3
+    dev: false
+
+  /@fastify/cookie@11.1.5:
+    resolution: {integrity: sha512-hs7e0otf7n/lJMpt63EFdQb5/u8kO6DeexEtLPVTybSdItC6SwJ1O0vtTyWvKNR70LZcHLlsUr/y3jFpqtyWRA==}
+    dependencies:
+      cookie: 2.0.2
+      fastify-plugin: 6.0.1
     dev: false
 
   /@fastify/cors@11.4.3:

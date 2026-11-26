@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@collab-board/shared": "workspace:^",
+    "@fastify/cookie": "^11.1.5",
     "@fastify/cors": "^11.4.3",
     "@fastify/websocket": "^11.3.7",
     "@node-rs/argon2": "^2.2.2",

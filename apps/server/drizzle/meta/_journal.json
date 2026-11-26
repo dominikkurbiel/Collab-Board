@@ -8,6 +8,13 @@
       "when": 1795687652698,
       "tag": "0000_create_boards",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795689671083,
+      "tag": "0001_add_board_password",
+      "breakpoints": true
     }
   ]
 }

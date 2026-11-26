@@ -14,6 +14,8 @@ export const boards = pgTable("boards", {
    * it is only ever loaded back into a Y.Doc.
    */
   state: bytea("state").notNull(),
+  /** argon2id hash of the board password; null = anyone with the link can open the board. */
+  passwordHash: text("password_hash"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

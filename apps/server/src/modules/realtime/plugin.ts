@@ -1,6 +1,6 @@
 import websocket from "@fastify/websocket";
 import { BOARD_ID_PATTERN } from "@collab-board/shared";
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyRequest } from "fastify";
 import type { WebSocket } from "ws";
 import { z } from "zod";
 import { config } from "../../config.js";
@@ -13,15 +13,28 @@ const paramsSchema = z.object({ boardId: z.string().regex(BOARD_ID_PATTERN) });
 const MAX_MESSAGE_BYTES = 2 * 1024 * 1024;
 const PING_INTERVAL_MS = 30_000;
 
+/**
+ * Who may join a board is decided outside this module (by the boards module).
+ * Port: realtime only knows the answer, not how it's computed.
+ */
+export type CheckAccess = (
+  boardId: string,
+  request: FastifyRequest,
+) => Promise<"granted" | "password-required" | "not-found">;
+
 export interface RealtimeOptions {
   storage: BoardStorage;
+  checkAccess: CheckAccess;
 }
 
 /**
  * Real-time collaboration: one WebSocket endpoint per board, `/ws/<boardId>`.
  * Rooms are loaded from storage on first use and saved while people edit.
  */
-export async function realtimePlugin(app: FastifyInstance, { storage }: RealtimeOptions) {
+export async function realtimePlugin(
+  app: FastifyInstance,
+  { storage, checkAccess }: RealtimeOptions,
+) {
   await app.register(websocket, { options: { maxPayload: MAX_MESSAGE_BYTES } });
 
   const rooms = new RoomManager(storage, app.log);
@@ -33,15 +46,22 @@ export async function realtimePlugin(app: FastifyInstance, { storage }: Realtime
     {
       websocket: true,
       // Runs BEFORE the HTTP connection is upgraded, so a bad request gets a normal
-      // HTTP error. This is also where the board password will be checked.
+      // HTTP error and no room is ever loaded for it.
       preValidation: async (request, reply) => {
         // Browsers don't apply CORS to WebSockets: check the Origin ourselves, so other
         // websites can't open a connection with the visitor's cookies
         if (request.headers.origin !== config.corsOrigin) {
           return reply.code(403).send({ error: "Origin not allowed" });
         }
-        if (!paramsSchema.safeParse(request.params).success) {
+        const params = paramsSchema.safeParse(request.params);
+        if (!params.success) {
           return reply.code(400).send({ error: "Invalid board id" });
+        }
+        // Password-protected boards need a valid access cookie, even outside our UI
+        const access = await checkAccess(params.data.boardId, request);
+        if (access === "not-found") return reply.code(404).send({ error: "Board not found" });
+        if (access === "password-required") {
+          return reply.code(401).send({ error: "Password required" });
         }
       },
     },
