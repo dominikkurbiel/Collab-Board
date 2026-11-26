@@ -22,6 +22,7 @@
     "@collab-board/shared": "workspace:^",
     "@fastify/cors": "^11.4.3",
     "@fastify/websocket": "^11.3.7",
+    "@node-rs/argon2": "^2.2.2",
     "@trpc/server": "^11.31.2",
     "drizzle-orm": "^0.45.4",
     "fastify": "^5.12.8",
